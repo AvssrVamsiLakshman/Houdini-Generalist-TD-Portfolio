@@ -374,8 +374,8 @@ export class WebGLController {
   }
 
   updateAvoidBounds() {
-    // Avoid drawing rain over the hero card, video containers, or the footer
-    const avoidElements = document.querySelectorAll('.hero-card, .video-card, .app-footer');
+    // Avoid drawing rain over the hero card or video containers
+    const avoidElements = document.querySelectorAll('.hero-card, .video-card');
     this.avoidBounds = Array.from(avoidElements).map(el => {
       const rect = el.getBoundingClientRect();
       const scrollX = window.scrollX || window.pageXOffset;
