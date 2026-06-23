@@ -31,6 +31,72 @@
 
     <!-- WebGL Canvas for 3D Viewport Background -->
     <canvas id="webgl-canvas"></canvas>
+    
+    <!-- Matrix 2D Canvas Overlay for VEX Digital Rain -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Viewport HUD Overlays -->
+    <div class="viewport-hud">
+      <!-- Top-Left overlay -->
+      <div class="hud-corner hud-top-left">
+        <div class="viewport-info-line text-muted">OBJ_PATH: <span id="hud-obj-path">/obj/geo1</span></div>
+        <div class="viewport-info-line text-muted">GRID_SPACING: <span>0.25</span></div>
+        <div class="viewport-info-line text-muted">ACTIVE_SOLVER: <span id="hud-active-solver" class="sop-color">SOP_GEOMETRY</span></div>
+      </div>
+
+      <!-- Top-Right overlay -->
+      <div class="hud-corner hud-top-right">
+        <div class="viewport-info-line">SHADING: <span>Smooth Wireframe</span></div>
+        <div class="viewport-info-line">CAMERA: <span>cam1 (Perspective)</span></div>
+        <div class="viewport-info-line" style="pointer-events: auto; cursor: pointer;" id="hud-renderer-selector" title="Click to cycle Renderers">RENDERER: <span style="color: #ff6a00; border-bottom: 1px dashed rgba(255,255,255,0.3);">Karma XPU</span></div>
+      </div>
+
+      <!-- Bottom-Left overlay with Gnomon axis -->
+      <div class="hud-corner hud-bottom-left">
+        <div class="gnomon-container">
+          <svg class="gnomon-svg" viewBox="0 0 100 100">
+            <!-- X axis (Red) -->
+            <line x1="50" y1="50" x2="82" y2="50" stroke="#ff3b30" stroke-width="2.5" />
+            <text x="86" y="54" fill="#ff3b30" font-size="12" font-family="monospace" font-weight="bold">X</text>
+            <!-- Y axis (Green) -->
+            <line x1="50" y1="50" x2="50" y2="18" stroke="#4cd964" stroke-width="2.5" />
+            <text x="47" y="11" fill="#4cd964" font-size="12" font-family="monospace" font-weight="bold">Y</text>
+            <!-- Z axis (Blue) -->
+            <line x1="50" y1="50" x2="28" y2="72" stroke="#007aff" stroke-width="2.5" />
+            <text x="17" y="82" fill="#007aff" font-size="12" font-family="monospace" font-weight="bold">Z</text>
+            <!-- Center dot -->
+            <circle cx="50" cy="50" r="3" fill="#ffffff" />
+          </svg>
+        </div>
+        <div>
+          <div class="viewport-info-line">DCC_WORKSTATION: <span>SideFX Houdini v22.0</span></div>
+          <div class="viewport-info-line">API_PORT: <span>hou.session [5173]</span></div>
+        </div>
+      </div>
+
+      <!-- Bottom-Right overlay -->
+      <div class="hud-corner hud-bottom-right">
+        <div class="viewport-info-line">FRAME: <span id="hud-frame-counter">240 / 240</span></div>
+        <div class="viewport-info-line">FPS_COOK: <span id="hud-fps-counter" style="color: #00ffaa;">60.0 fps</span></div>
+        <div class="viewport-info-line text-muted">MEM_COOK: <span>1.35 GB</span></div>
+      </div>
+    </div>
+
+    <!-- Vertical Viewport Shelf Toolbar (Houdini Style) -->
+    <div class="shelf-toolbar">
+      <button class="shelf-tool-btn active" id="btn-toggle-grid" title="Toggle Ground Grid (G)">
+        <svg viewBox="0 0 24 24"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/></svg>
+      </button>
+      <button class="shelf-tool-btn active" id="btn-translate" title="Translate Tool (T)">
+        <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+      </button>
+      <button class="shelf-tool-btn" id="btn-rotate" title="Rotate Tool (R)">
+        <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6z"/></svg>
+      </button>
+      <button class="shelf-tool-btn" id="btn-scale" title="Scale Tool (E)">
+        <svg viewBox="0 0 24 24"><path d="M4 4h7v2H6v5H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 2h-4v2h4v-2zm2-2h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+      </button>
+    </div>
 
     <!-- Main Container -->
     <div id="app" class="full-layout">
@@ -49,428 +115,411 @@
         <main class="content-container">
           
           <!-- Hero & Contact Section -->
-          <section class="section-hero" id="hero">
+          <section class="section-hero" id="hero" data-mode="HERO">
             <div class="row-text-container">
-              <div class="hero-card glass-panel">
-              <span class="tag">HOUDINI TD & GENERALIST</span>
-              <div class="hero-name-container">
-                <h1 class="hero-name">A.v.s.s.r. Vamsi Lakshman</h1>
+              <div class="hero-card houdini-pane hero-pane" id="pane-hero">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">About_TD</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="tag">HOUDINI TD & GENERALIST</span>
+                  <div class="hero-name-container">
+                    <h1 class="hero-name">A.v.s.s.r. Vamsi Lakshman</h1>
+                  </div>
+                  <p class="hero-intro">
+                    Specializing in procedural geometry generation, physical simulations, pipeline tools development, and USD lookdev. Fusing coding logic with cinematic art.
+                  </p>
+                  
+                  <!-- HDA Custom Visitor Solver -->
+                  <div class="visitor-form-container hda-form-card" style="margin-top: 35px;">
+                    <div class="hda-form-header">Please fill in your info, I will contact you</div>
+                    <form class="visitor-contact-form hda-parameter-grid" id="visitor-contact-form">
+                      <div class="hda-field">
+                        <label for="visitor-name">Visitor Name</label>
+                        <div class="hda-input-wrapper">
+                          <input type="text" id="visitor-name" placeholder="Enter your name" required />
+                        </div>
+                      </div>
+                      <div class="hda-field">
+                        <label for="visitor-phone">Phone Number</label>
+                        <div class="hda-input-wrapper">
+                          <input type="tel" id="visitor-phone" placeholder="Enter your phone number" required />
+                        </div>
+                      </div>
+                      <div class="hda-field">
+                        <label for="visitor-email">E-mail Address</label>
+                        <div class="hda-input-wrapper">
+                          <input type="email" id="visitor-email" placeholder="Enter your email" required />
+                        </div>
+                      </div>
+                      <button type="submit" class="hda-submit-btn">Submit Info</button>
+                    </form>
+                  </div>
+                </div>
               </div>
-              <p class="hero-intro">
-                Specializing in procedural geometry generation, physical simulations, pipeline tools development, and USD lookdev. Fusing coding logic with cinematic art.
-              </p>
-              
-              <!-- Inline Visitor Contact Form -->
-              <div class="visitor-form-container">
-                <div class="visitor-form-header">VISITOR REGISTER & SOLVER:</div>
-                <form class="visitor-contact-form" id="visitor-contact-form">
-                  <div class="form-row-inline">
-                    <label for="visitor-name">Visitor Name :</label>
-                    <input type="text" id="visitor-name" placeholder="Enter your name" required />
-                  </div>
-                  <div class="form-row-inline">
-                    <label for="visitor-phone">Phone :</label>
-                    <input type="tel" id="visitor-phone" placeholder="Enter your phone number" required />
-                  </div>
-                  <div class="form-row-inline">
-                    <label for="visitor-email">E-mail :</label>
-                    <input type="email" id="visitor-email" placeholder="Enter your email" required />
-                  </div>
-                  <button type="submit" class="btn btn-primary submit-btn">Submit Solver</button>
-                </form>
-              </div>
-            </div>
             </div>
             <div class="row-video-viewport" style="background: transparent; border: none; box-shadow: none;"></div>
           </section>
 
-          <!-- 1. SOPs (Geometry Nodes) Section -->
-          <section class="section-topic alternating-row" id="topic-sops" data-mode="SOP">
+          <!-- 1. Procedural Modelling Section -->
+          <section class="section-topic alternating-row" id="topic-modeling" data-mode="SOP">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel orange-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">SOP_SOLVER</span>
+              <div class="video-card glass-panel sop-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">SOP_MODELING</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">SOP - GEOMETRY NODE</span>
-              <h2>SOP - Geometry nodes</h2>
-              <p>
-                Geometry nodes live inside Geo objects and generate geometry. Harnessing procedural math, nodes operations, and attributes (P, N, v, transform) to model modular buildings, organic curves, and landscape grids dynamically.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane sop-pane" id="pane-modeling">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Modelling</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                    <button class="pane-flag flag-template" title="Template Flag" data-flag="template"></button>
+                    <button class="pane-flag flag-select" title="Select Flag" data-flag="select"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">SOP - GEOMETRY NODE</span>
+                  <h2>Procedural Modelling</h2>
+                  <p>
+                    Geometry nodes live inside Geo objects and generate geometry. Harnessing procedural math, nodes operations, and attributes (P, N, v, transform) to model modular buildings, organic curves, and landscape grids dynamically.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 2. DOPs (Dynamics) Section -->
-          <section class="section-topic alternating-row" id="topic-dops" data-mode="DOP">
+          <!-- 2. Procedural Texturing Section -->
+          <section class="section-topic alternating-row" id="topic-texturing" data-mode="COP">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel blue-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">3840x2160</span>
-                <span class="vid-codec">DOP_NET</span>
+              <div class="video-card glass-panel cop-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">COP_GPU</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/517602521.sd.mp4?s=d00e60805fa600ab818df419736c4b264e1c75cc&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">DOP - DYNAMICS NODE</span>
-              <h2>DOP - Dynamics nodes</h2>
-              <p>
-                Dynamics nodes set up the conditions and rules for dynamics simulations. Combining gravity constraints, smoke collisions, fluid forces, and structural fractures to execute hyper-detailed physical actions.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane cop-pane" id="pane-texturing">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Texturing</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                    <button class="pane-flag flag-template" title="Template Flag" data-flag="template"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">COP - COPERNICUS NODE</span>
+                  <h2>Procedural Texturing</h2>
+                  <p>
+                    COP nodes provide real-time GPU image manipulation within a 3D workspace. Houdini's new Copernicus 2D and 3D processing framework for baking high-res texture maps, procedural tiling, and compositing filters.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 3. LOPs (USD Nodes) Section -->
-          <section class="section-topic alternating-row" id="topic-lops" data-mode="LOP">
+          <!-- 3. Procedural Rigging Section -->
+          <section class="section-topic alternating-row" id="topic-rigging" data-mode="APEX">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel pink-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">USD_STAGE</span>
+              <div class="video-card glass-panel apex-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">APEX_RIG</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">LOP - USD NODE</span>
-              <h2>LOP - USD nodes</h2>
-              <p>
-                LOP nodes generate USD describing characters, props, lighting, and rendering. Solaris look development pipeline, managing scene overrides, lighting sublayers, references, and variations in high-end cinematic graphics.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane apex-pane" id="pane-rigging">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Rigging</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">APEX & KINEFX</span>
+                  <h2>Procedural Rigging</h2>
+                  <p>
+                    Procedural skeletal rigging and animation solvers. Constructing KineFX character graphs, IK rigs, mesh deformation models, and dynamic parameter rigging pipelines inside geometry networks.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 4. VOPs (Shader Nodes) Section -->
-          <section class="section-topic alternating-row" id="topic-vops" data-mode="LOP">
+          <!-- 4. Procedural MoCap Section -->
+          <section class="section-topic alternating-row" id="topic-mocap" data-mode="CHOP">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel pink-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">VEX_VOP</span>
+              <div class="video-card glass-panel chop-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">CHOP_MOCAP</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">VOP - SHADER NODE</span>
-              <h2>VOP - Shader nodes</h2>
-              <p>
-                VOP nodes let you define a program (such as a shader) by connecting nodes together. Houdini then compiles the node network into executable VEX code. Creating custom MaterialX, Karma, and Arnold lookdev patterns.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane chop-pane" id="pane-mocap">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_MoCap</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">CHOP - CHANNEL NODE</span>
+                  <h2>Procedural MoCap</h2>
+                  <p>
+                    Manipulating motion capture channel data curves. Applying noise offsets, dampening springs, audio waveforms triggers, and retargeting filters directly inside CHOP networks for smooth actor integration.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 5. VEX Scripting Section -->
-          <section class="section-topic alternating-row" id="topic-vex" data-mode="SOP">
+          <!-- 5. Crowd Simulation Section -->
+          <section class="section-topic alternating-row" id="topic-crowd" data-mode="CROWD">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel orange-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1080x1080</span>
-                <span class="vid-codec">VEX_WRANGLE</span>
+              <div class="video-card glass-panel crowd-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">CROWD_AGENT</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/538571059.sd.mp4?s=4270bcbe7e6f3d9d3f1eb973801f11e86a9f2430&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">VEX SCRIPTING</span>
-              <h2>VEX Scripting</h2>
-              <p>
-                Authoring high-performance VEX code inside Point, Primitive, and Attribute Wrangles. Designing custom noise formulas, matrix alignments, vector cross products, and point attractors for absolute geometry control.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane crowd-pane" id="pane-crowd">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Crowd_Simulation</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">CROWD - AGENT SIMULATION NODE</span>
+                  <h2>Crowd Simulation</h2>
+                  <p>
+                    Designing multi-agent simulations using Houdini's native crowd engine. Creating state machines, ragdoll transitions, terrain adaptation, and obstacle avoidance solvers for massive digital battles and urban populations.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 6. Python API Section -->
-          <section class="section-topic alternating-row" id="topic-python" data-mode="TOP">
+          <!-- 6. Character FX (CFX) Section -->
+          <section class="section-topic alternating-row" id="topic-cfx" data-mode="CFX">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel green-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">PYTHON_API</span>
+              <div class="video-card glass-panel cfx-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">CFX_VELLUM</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/517602521.sd.mp4?s=d00e60805fa600ab818df419736c4b264e1c75cc&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/538571059.sd.mp4?s=4270bcbe7e6f3d9d3f1eb973801f11e86a9f2430&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">PYTHON API</span>
-              <h2>Python API (hou module)</h2>
-              <p>
-                Programmatic node graph generation, shelf tools automation, parameters overriding, callback scripts, and building Houdini pipeline plugins. Connecting DCC assets directly to file systems and database backends.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane cfx-pane" id="pane-cfx">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Character_FX</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">CFX - VELLUM & PHYSICS NODE</span>
+                  <h2>Character FX (CFX)</h2>
+                  <p>
+                    Developing complex simulations for character components like high-fidelity clothing, layered tissue dynamics, hair/fur grooming, and body collisions. Powered by Houdini's multi-solver Vellum engine.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 7. PySide6 UI Section -->
-          <section class="section-topic alternating-row" id="topic-pyside" data-mode="TOP">
+          <!-- 7. Dynamics & Simulation Section -->
+          <section class="section-topic alternating-row" id="topic-dynamics" data-mode="DOP">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel green-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">PYSIDE_QT</span>
+              <div class="video-card glass-panel dop-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">3840x2160</span>
+                  <span class="vid-codec">DOP_NET</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/517602521.sd.mp4?s=d00e60805fa600ab818df419736c4b264e1c75cc&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/538571059.sd.mp4?s=4270bcbe7e6f3d9d3f1eb973801f11e86a9f2430&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">PYSIDE6 UI</span>
-              <h2>PySide6</h2>
-              <p>
-                Designing custom Qt desktop interfaces, floating parameter windows, and layout overlays integrated inside Houdini's workspace UI. Using signals/slots and custom style sheets to optimize artist workflows.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane dop-pane" id="pane-dynamics">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Dynamics_&_Simulation</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                    <button class="pane-flag flag-template" title="Template Flag" data-flag="template"></button>
+                    <button class="pane-flag flag-select" title="Select Flag" data-flag="select"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">DOP - DYNAMICS NODE</span>
+                  <h2>Dynamics & Simulation</h2>
+                  <p>
+                    Dynamics nodes set up the conditions and rules for dynamics simulations. Combining gravity constraints, smoke collisions, fluid forces, and structural fractures to execute hyper-detailed physical actions (FLIP, Pyro, Vellum, RBD).
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 8. HDA Section -->
-          <section class="section-topic alternating-row" id="topic-hda" data-mode="SOP">
+          <!-- 8. Procedural Look Dev Section -->
+          <section class="section-topic alternating-row" id="topic-lookdev" data-mode="VOP">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel orange-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">HDA_ASSET</span>
+              <div class="video-card glass-panel vop-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">VEX_VOP</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">HDA - HOUDINI DIGITAL ASSET</span>
-              <h2>HDA (Houdini Digital Assets)</h2>
-              <p>
-                Packaging node structures into reusable pipelines with custom parameters. Exposing procedural geometries, grooming assets, and simulation tools directly in Unreal Engine, Unity, and Maya via Houdini Engine.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane vop-pane" id="pane-lookdev">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Look_Dev</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">VOP - SHADER NODE</span>
+                  <h2>Procedural Look Dev</h2>
+                  <p>
+                    VOP nodes let you define custom materials procedurally by connecting node networks. Houdini then compiles the node graphs into executable VEX, Karma, and MaterialX codes for Arnold and render pipelines.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 9. HDK & C++ Section -->
-          <section class="section-topic alternating-row" id="topic-hdk" data-mode="TOP">
+          <!-- 9. Procedural Tool Dev Section -->
+          <section class="section-topic alternating-row" id="topic-tooldev" data-mode="TOOLDEV">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel green-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">HDK_CPP</span>
+              <div class="video-card glass-panel tooldev-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">PIPELINE_DEV</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/538571059.sd.mp4?s=4270bcbe7e6f3d9d3f1eb973801f11e86a9f2430&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/538571059.sd.mp4?s=4270bcbe7e6f3d9d3f1eb973801f11e86a9f2430&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">HDK & C++ OPERATORS</span>
-              <h2>HDK (Houdini Development Kit) & C/C++</h2>
-              <p>
-                Writing custom compiled operators and plugins in C++ to achieve maximum computation speed. Creating high-performance SOP nodes, customized particle grid solvers, and compiled VEX libraries.
-              </p>
-                          </div>
+              <div class="topic-card houdini-pane tooldev-pane" id="pane-tooldev">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Tool_Dev</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">HDA | HDK | PYTHON | C/C++ | PYSIDE6 | VEX | HSCRIPT</span>
+                  <h2>Procedural Tool Dev</h2>
+                  <p>
+                    Writing custom operators and workflow scripts to automate Houdini networks. Developing reusable Houdini Digital Assets (HDAs), shelves widgets, Qt/PySide6 panel layouts, HScript nodes, VEX wrangles, and compiled C++ solvers using the Houdini Development Kit (HDK).
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 10. TOPs (Task Nodes) Section -->
-          <section class="section-topic alternating-row" id="topic-tops" data-mode="TOP">
+          <!-- 10. Procedural Lighting | Rendering & Compositing Section -->
+          <section class="section-topic alternating-row" id="topic-lighting" data-mode="LOP">
             <div class="row-video-viewport">
-              <div class="video-card glass-panel green-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1080x1080</span>
-                <span class="vid-codec">TOP_PDG</span>
+              <div class="video-card glass-panel lop-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">SOLARIS_STAGE</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
+                </video>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/538571059.sd.mp4?s=4270bcbe7e6f3d9d3f1eb973801f11e86a9f2430&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
             </div>
             <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">TOP - TASK NODE</span>
-              <h2>TOP - Task nodes</h2>
-              <p>
-                TOP nodes define a workflow where data is fed into the network, turned into work items and manipulated by different nodes. Many nodes represent external processes that can be run on local machine or server farm (PDG pipelines).
-              </p>
-                          </div>
-            </div>
-          </section>
-
-          <!-- 11. CHOPs Section -->
-          <section class="section-topic alternating-row" id="topic-chops" data-mode="LOP">
-            <div class="row-video-viewport">
-              <div class="video-card glass-panel pink-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">CHOP_NET</span>
+              <div class="topic-card houdini-pane lop-pane" id="pane-lighting">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Lighting_Rendering_Compositing</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                    <button class="pane-flag flag-template" title="Template Flag" data-flag="template"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">LOP & ROP - SOLARIS USD</span>
+                  <h2>Procedural Lighting | Rendering & Compositing</h2>
+                  <p>
+                    Solaris look development pipeline. Harnessing USD stages, light mixers, scene overrides, sublayer templates, Karma render passes, ROP render trees, and COP composting nodes for high-end cinematic output.
+                  </p>
+                </div>
               </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
-            </div>
-            <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">CHOP - CHANNEL NODE</span>
-              <h2>CHOP - Channel nodes</h2>
-              <p>
-                Channel nodes create, filter, and manipulate channel data. Applying procedural modifiers, math functions, filters, and audio waveforms directly to animation curves, motion capture feeds, and camera trajectories.
-              </p>
-                          </div>
-            </div>
-          </section>
-
-          <!-- 12. ROPs Section -->
-          <section class="section-topic alternating-row" id="topic-rops" data-mode="LOP">
-            <div class="row-video-viewport">
-              <div class="video-card glass-panel pink-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">ROP_OUTPUT</span>
-              </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
-            </div>
-            <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">ROP - RENDER NODE</span>
-              <h2>ROP - Render nodes</h2>
-              <p>
-                Render nodes either render the scene or set up render dependency networks. Structuring batch render trees, caching simulation geometry, and configuring engine parameters for Karma, Mantra, and Arnold render queues.
-              </p>
-                          </div>
-            </div>
-          </section>
-
-          <!-- 13. SHOPs Section -->
-          <section class="section-topic alternating-row" id="topic-shops" data-mode="LOP">
-            <div class="row-video-viewport">
-              <div class="video-card glass-panel pink-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">SHOP_SHADER</span>
-              </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e2b1011e1f744747ebc793ff8bb&profile_id=139&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
-            </div>
-            <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">SHOP - SHADER OPERATOR</span>
-              <h2>SHOPs (Shader Operators)</h2>
-              <p>
-                Look development and classic shading networks interface. Creating visual material parameters, rendering layers overrides, and legacy renderer nodes connections prior to the unified MaterialX USD Solaris environment.
-              </p>
-                          </div>
-            </div>
-          </section>
-
-          <!-- 14. COPs Section -->
-          <section class="section-topic alternating-row" id="topic-cops" data-mode="LOP">
-            <div class="row-video-viewport">
-              <div class="video-card glass-panel pink-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">COP_GPU</span>
-              </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
-            </div>
-            <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">COP - COPERNICUS NODE</span>
-              <h2>COP - Copernicus nodes</h2>
-              <p>
-                COP nodes provide real-time image manipulation within a 3D space. Houdini's 2D and 3D GPU image processing framework for baking texture maps, procedural mapping, viewport overlay styling, and quick compositing.
-              </p>
-                          </div>
-            </div>
-          </section>
-
-          <!-- 15. Apex & KineFX Section -->
-          <section class="section-topic alternating-row" id="topic-apex" data-mode="SOP">
-            <div class="row-video-viewport">
-              <div class="video-card glass-panel orange-glow">
-
-              <div class="video-overlay-gimmick">
-                <span class="vid-res">1920x1080</span>
-                <span class="vid-codec">APEX_KINEFX</span>
-              </div>
-              <video class="viewport-video" loop muted playsinline autoplay preload="auto">
-                <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
-              </video>
-                          </div>
-            </div>
-            <div class="row-text-container">
-              <div class="topic-card glass-panel">
-
-              <span class="topic-label">APEX & KINEFX</span>
-              <h2>Apex & KineFX (Character Rigging)</h2>
-              <p>
-                Procedural rigging and animation solvers. Constructing KineFX character graphs, IK solvers, bone deformations, retargeting capture animations, and dynamic skeleton controls within the geometry pipeline.
-              </p>
-                          </div>
             </div>
           </section>
 
