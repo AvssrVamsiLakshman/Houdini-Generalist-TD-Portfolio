@@ -8,10 +8,10 @@
 }
 
 :root {
-  --bg-primary: #16171a;
-  --bg-secondary: #1d1e22;
-  --bg-tertiary: #25272b;
-  --bg-workstation: rgba(29, 30, 34, 0.65);
+  --bg-primary: #0a0b0d;
+  --bg-secondary: #111215;
+  --bg-tertiary: #18191d;
+  --bg-workstation: rgba(17, 18, 21, 0.70);
   --accent-orange: #ff6a00;
   --accent-orange-rgb: 255, 106, 0;
   --accent-orange-hover: #ff8533;
@@ -39,6 +39,7 @@
   --color-tooldev: #ff4757;
   --color-crowd: #a55eea;
   --color-cfx: #ff7675;
+  --color-groom: #eccc68;
 }
 
 html {
@@ -426,9 +427,9 @@ body {
 }
 .pane-tab.active {
   color: var(--accent-orange);
-  background: #16171a;
+  background: #0a0b0d;
   border: 1px solid var(--border-color);
-  border-bottom: 1px solid #16171a;
+  border-bottom: 1px solid #0a0b0d;
   font-weight: 600;
 }
 
@@ -444,6 +445,7 @@ body {
 .tooldev-pane .pane-tab.active { color: var(--color-tooldev); border-bottom-color: rgba(26, 28, 32, 0.95); }
 .crowd-pane .pane-tab.active { color: var(--color-crowd); border-bottom-color: rgba(26, 28, 32, 0.95); }
 .cfx-pane .pane-tab.active { color: var(--color-cfx); border-bottom-color: rgba(26, 28, 32, 0.95); }
+.groom-pane .pane-tab.active { color: var(--color-groom); border-bottom-color: rgba(26, 28, 32, 0.95); }
 
 .pane-flags {
   display: flex;
@@ -529,7 +531,7 @@ body {
 }
 
 .wrangle-editor-title {
-  background: #16171a;
+  background: #0a0b0d;
   border-bottom: 1px solid var(--border-color);
   padding: 6px 12px;
   font-family: var(--font-mono);
@@ -555,7 +557,7 @@ body {
 
 .wrangle-sliders-pane {
   padding: 15px;
-  background: #16171a;
+  background: #0a0b0d;
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -1080,6 +1082,10 @@ body {
   box-shadow: 0 0 25px rgba(255, 118, 117, 0.2), 0 10px 30px rgba(0, 0, 0, 0.5);
   border-color: rgba(255, 118, 117, 0.3) !important;
 }
+.groom-glow {
+  box-shadow: 0 0 25px rgba(236, 204, 104, 0.2), 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-color: rgba(236, 204, 104, 0.3) !important;
+}
 
 /* Video tints */
 .hero-glow .viewport-video { filter: hue-rotate(-20deg) saturate(180%) brightness(0.8) contrast(110%); }
@@ -1093,6 +1099,7 @@ body {
 .tooldev-glow .viewport-video { filter: hue-rotate(-60deg) saturate(180%) brightness(0.8) contrast(110%); }
 .crowd-glow .viewport-video { filter: hue-rotate(270deg) saturate(180%) brightness(0.8) contrast(110%); }
 .cfx-glow .viewport-video { filter: hue-rotate(330deg) saturate(180%) brightness(0.8) contrast(110%); }
+.groom-glow .viewport-video { filter: hue-rotate(15deg) saturate(150%) brightness(0.85) contrast(110%); }
 
 /* Row text description card */
 .row-text-container {

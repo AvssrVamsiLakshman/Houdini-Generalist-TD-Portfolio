@@ -30,7 +30,7 @@
     </div>
 
     <!-- WebGL Canvas for 3D Viewport Background -->
-    <canvas id="webgl-canvas"></canvas>
+    <div id="webgl-canvas"></div>
     
     <!-- Matrix 2D Canvas Overlay for VEX Digital Rain -->
     <canvas id="matrix-canvas"></canvas>
@@ -342,10 +342,44 @@
                   </p>
                 </div>
               </div>
+          </section>
+
+          <!-- 6. Procedural Grooming Section -->
+          <section class="section-topic alternating-row" id="topic-groom" data-mode="GROOM">
+            <div class="row-video-viewport">
+              <div class="video-card glass-panel groom-glow">
+                <div class="video-overlay-gimmick">
+                  <span class="vid-res">1920x1080</span>
+                  <span class="vid-codec">GROOM_SOP</span>
+                </div>
+                <video class="viewport-video" loop muted playsinline autoplay preload="auto">
+                  <source src="https://player.vimeo.com/external/435674703.sd.mp4?s=7fdf705fa9f20b332d9dbd0061e80d885a54db52&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <div class="row-text-container">
+              <div class="topic-card houdini-pane groom-pane" id="pane-groom">
+                <div class="pane-header">
+                  <div class="pane-tabs">
+                    <button class="pane-tab active" style="pointer-events: none;">Procedural_Grooming</button>
+                  </div>
+                  <div class="pane-flags">
+                    <button class="pane-flag flag-display active" title="Display Flag" data-flag="display"></button>
+                    <button class="pane-flag flag-bypass" title="Bypass Flag" data-flag="bypass"></button>
+                  </div>
+                </div>
+                <div class="pane-body">
+                  <span class="topic-label">GROOM - HAIR & FUR OPERATOR NODE</span>
+                  <h2>Procedural Grooming</h2>
+                  <p>
+                    Designing, styling, and simulating hair, fur, and feathers. Utilizing Houdini's guide-groom operators, guide processes, and hair procedural systems for realistic, dynamic character grooms.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
-          <!-- 6. Character FX (CFX) Section -->
+          <!-- 7. Character FX (CFX) Section -->
           <section class="section-topic alternating-row" id="topic-cfx" data-mode="CFX">
             <div class="row-video-viewport">
               <div class="video-card glass-panel cfx-glow">
@@ -380,7 +414,7 @@
             </div>
           </section>
 
-          <!-- 7. Dynamics & Simulation Section -->
+          <!-- 8. Dynamics & Simulation Section -->
           <section class="section-topic alternating-row" id="topic-dynamics" data-mode="DOP">
             <div class="row-video-viewport">
               <div class="video-card glass-panel dop-glow">
@@ -417,7 +451,7 @@
             </div>
           </section>
 
-          <!-- 8. Procedural Look Dev Section -->
+          <!-- 9. Procedural Look Dev Section -->
           <section class="section-topic alternating-row" id="topic-lookdev" data-mode="VOP">
             <div class="row-video-viewport">
               <div class="video-card glass-panel vop-glow">
@@ -452,7 +486,7 @@
             </div>
           </section>
 
-          <!-- 9. Procedural Tool Dev Section -->
+          <!-- 10. Procedural Tool Dev Section -->
           <section class="section-topic alternating-row" id="topic-tooldev" data-mode="TOOLDEV">
             <div class="row-video-viewport">
               <div class="video-card glass-panel tooldev-glow">
@@ -487,7 +521,7 @@
             </div>
           </section>
 
-          <!-- 10. Procedural Lighting | Rendering & Compositing Section -->
+          <!-- 11. Procedural Lighting | Rendering & Compositing Section -->
           <section class="section-topic alternating-row" id="topic-lighting" data-mode="LOP">
             <div class="row-video-viewport">
               <div class="video-card glass-panel lop-glow">
