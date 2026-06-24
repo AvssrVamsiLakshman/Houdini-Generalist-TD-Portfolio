@@ -1447,3 +1447,18 @@ body {
   mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
 }
+
+/* CSS Scroll Snapping for Desktop Viewports */
+@media (min-width: 1025px) {
+  html {
+    scroll-snap-type: y mandatory;
+  }
+  .section-hero,
+  .section-topic {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .app-footer {
+    scroll-snap-align: end;
+  }
+}

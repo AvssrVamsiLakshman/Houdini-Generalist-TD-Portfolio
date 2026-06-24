@@ -33,10 +33,18 @@ export class WebGLController {
     };
 
     // Setup scroll tracking and smooth horizontal translation variables
+    this.cardCenters = {};
     this.currentScrollY = window.scrollY;
-    this.targetShiftX = window.innerWidth * 0.24; // Starts on the right (Hero)
+    this.targetShiftX = window.innerWidth * 0.25; // Starts on the right (Hero)
     this.currentShiftX = this.targetShiftX;
-    this.shiftY = -this.currentScrollY * 0.15;
+    this.targetShiftY = 0;
+    this.currentShiftY = 0;
+
+    // Cache card centers after layout rendering completes
+    setTimeout(() => {
+      this.updateCardCenters();
+      this.updateScrollShift();
+    }, 200);
 
     // Set initial mode to HERO
     this.setMode('HERO');
@@ -45,13 +53,35 @@ export class WebGLController {
     this.animateLoop();
 
     window.addEventListener('scroll', () => {
-      this.currentScrollY = window.scrollY;
-      this.shiftY = -this.currentScrollY * 0.15;
+      this.updateScrollShift();
     });
     
     window.addEventListener('resize', () => {
+      this.updateCardCenters();
       this.updateTargetX();
+      this.updateScrollShift();
     });
+  }
+
+  updateCardCenters() {
+    const modes = ['HERO', 'SOP', 'COP', 'APEX', 'CHOP', 'CROWD', 'GROOM', 'CFX', 'DOP', 'VOP', 'TOOLDEV', 'LOP'];
+    modes.forEach(mode => {
+      const section = document.querySelector(`section[data-mode="${mode}"]`) || document.getElementById('hero');
+      if (section) {
+        const card = section.querySelector('.topic-card, .hero-card');
+        if (card) {
+          const rect = card.getBoundingClientRect();
+          const scrollTop = window.scrollY;
+          // Calculate card center relative to document top
+          this.cardCenters[mode] = rect.top + scrollTop + rect.height / 2;
+        }
+      }
+    });
+  }
+
+  updateScrollShift() {
+    this.currentScrollY = window.scrollY;
+    this.targetShiftY = 0;
   }
 
   updateTargetX() {
@@ -74,24 +104,33 @@ export class WebGLController {
         LOP: 'left'
       };
       const side = modeSides[this.activeMode] || 'right';
-      const maxShift = width * 0.24;
+      const maxShift = width * 0.25;
       this.targetShiftX = (side === 'left') ? -maxShift : maxShift;
     }
   }
 
   animateLoop() {
     const ease = 0.08;
-    const diff = this.targetShiftX - this.currentShiftX;
     
-    if (Math.abs(diff) > 0.1) {
-      this.currentShiftX += diff * ease;
+    // Lerp X
+    const diffX = this.targetShiftX - this.currentShiftX;
+    if (Math.abs(diffX) > 0.1) {
+      this.currentShiftX += diffX * ease;
     } else {
       this.currentShiftX = this.targetShiftX;
     }
 
+    // Lerp Y
+    const diffY = this.targetShiftY - this.currentShiftY;
+    if (Math.abs(diffY) > 0.1) {
+      this.currentShiftY += diffY * ease;
+    } else {
+      this.currentShiftY = this.targetShiftY;
+    }
+
     const wrapper = document.getElementById('gif-bg-scroller-wrapper');
     if (wrapper) {
-      wrapper.style.transform = `translate3d(${this.currentShiftX}px, ${this.shiftY}px, 0)`;
+      wrapper.style.transform = `translate3d(${this.currentShiftX}px, ${this.currentShiftY}px, 0)`;
     }
 
     requestAnimationFrame(() => this.animateLoop());
@@ -106,6 +145,7 @@ export class WebGLController {
   setMode(mode) {
     this.activeMode = mode;
     this.updateTargetX();
+    this.updateScrollShift();
 
     // Update HUD elements on screen
     const pathText = document.getElementById('hud-obj-path');
