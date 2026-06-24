@@ -219,12 +219,40 @@ export class WebGLController {
 
     this.matrixCtx.textAlign = 'left';
 
+    // Precalculate bounds Y limits to optimize collision checks
+    let minBoundTop = Infinity;
+    let maxBoundBottom = -Infinity;
+    const hasBounds = this.avoidBounds.length > 0;
+    if (hasBounds) {
+      for (let i = 0; i < this.avoidBounds.length; i++) {
+        const bound = this.avoidBounds[i];
+        if (bound.top < minBoundTop) minBoundTop = bound.top;
+        if (bound.bottom > maxBoundBottom) maxBoundBottom = bound.bottom;
+      }
+    }
+
+    // Font cache to prevent redundant context setting
+    let activeFont = '';
+    const setCtxFont = (size) => {
+      const fontStr = `${size}px 'JetBrains Mono', monospace`;
+      if (activeFont !== fontStr) {
+        this.matrixCtx.font = fontStr;
+        activeFont = fontStr;
+      }
+    };
+
+    const mouseX = this.mouseX;
+    const mouseY = this.mouseY;
+    const scrollY = this.currentScrollY;
+
     this.matrixColumns.forEach((col) => {
       const char = this.tokens[col.tokenIndex];
+      const absoluteY = col.y + scrollY;
 
-      const absoluteY = col.y + this.currentScrollY;
+      // 1. Determine Section Mode Color
       let matchedColor = this.themeColors.HERO;
-      for (const section of this.sectionBounds) {
+      for (let i = 0; i < this.sectionBounds.length; i++) {
+        const section = this.sectionBounds[i];
         if (absoluteY >= section.top && absoluteY <= section.bottom) {
           matchedColor = this.themeColors[section.mode] || this.themeColors.HERO;
           break;
@@ -234,98 +262,34 @@ export class WebGLController {
       const g = Math.round(matchedColor.g);
       const b = Math.round(matchedColor.b);
 
-      let headDeflection = 0;
-      const headAbsoluteY = col.y + this.currentScrollY;
+      // 2. Check mouse proximity horizontally
+      const colNearMouse = Math.abs(col.x - mouseX) < 120;
 
-      for (const bound of this.avoidBounds) {
-        let deflection = 0;
-        const centerX = (bound.left + bound.right) / 2;
-        const margin = 12;
-        let yWeight = 0;
-        const yBuffer = 90;
-
-        if (headAbsoluteY >= bound.top - yBuffer && headAbsoluteY < bound.top) {
-          yWeight = (headAbsoluteY - (bound.top - yBuffer)) / yBuffer;
-          yWeight = Math.sin(yWeight * Math.PI / 2);
-        } else if (headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
-          yWeight = 1;
-        } else if (headAbsoluteY > bound.bottom && headAbsoluteY <= bound.bottom + yBuffer) {
-          yWeight = 1 - (headAbsoluteY - bound.bottom) / yBuffer;
-          yWeight = Math.sin(yWeight * Math.PI / 2);
-        }
-
-        if (yWeight > 0) {
-          if (col.x < centerX) {
-            const targetX = bound.left - margin;
-            if (col.x > targetX) {
-              deflection = (targetX - col.x) * yWeight;
-            }
-          } else {
-            const targetX = bound.right + margin;
-            if (col.x < targetX) {
-              deflection = (targetX - col.x) * yWeight;
-            }
-          }
-        }
-
-        if (Math.abs(deflection) > Math.abs(headDeflection)) {
-          headDeflection = deflection;
-        }
-      }
-
-      const headDeflectedX = col.x + headDeflection;
-
-      const headDx = headDeflectedX - this.mouseX;
-      const headDy = col.y - this.mouseY;
-      const headDist = Math.sqrt(headDx * headDx + headDy * headDy);
-
-      let headOffsetX = 0;
-      let headFontScale = 1;
-
-      if (headDist < 120) {
-        headOffsetX = (120 - headDist) * 0.3 * (headDx > 0 ? 1 : -1);
-        headFontScale = 1 + (120 - headDist) * 0.003;
-      }
-
-      this.matrixCtx.font = `${Math.floor(col.fontSize * headFontScale)}px 'JetBrains Mono', monospace`;
-      const finalHeadX = headDeflectedX + headOffsetX;
-
-      let drawHead = true;
-      for (const bound of this.avoidBounds) {
-        if (finalHeadX >= bound.left && finalHeadX <= bound.right &&
-          headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
-          drawHead = false;
-          break;
-        }
-      }
-
-      if (drawHead) {
-        this.matrixCtx.fillStyle = `rgba(255, 255, 255, ${col.opacity * 0.95})`;
-        this.matrixCtx.shadowBlur = 6;
-        this.matrixCtx.shadowColor = `rgb(${r}, ${g}, ${b})`;
-        this.matrixCtx.fillText(char, finalHeadX, col.y);
-      }
-
+      // 3. Check bounds proximity vertically
       const trailLength = 5;
-      for (let j = 1; j <= trailLength; j++) {
-        const trailOffset = j * col.fontSize;
-        const trailAbsoluteY = col.y - trailOffset + this.currentScrollY;
+      const colMinY = col.y - trailLength * col.fontSize;
+      const colMaxY = col.y;
+      const colNearBounds = hasBounds && (colMaxY + scrollY >= minBoundTop - 90 && colMinY + scrollY <= maxBoundBottom + 90);
 
-        let trailDeflection = 0;
-        for (const bound of this.avoidBounds) {
+      // --- Draw Head Character ---
+      let headDeflection = 0;
+      if (colNearBounds) {
+        const headAbsoluteY = col.y + scrollY;
+        for (let i = 0; i < this.avoidBounds.length; i++) {
+          const bound = this.avoidBounds[i];
           let deflection = 0;
           const centerX = (bound.left + bound.right) / 2;
           const margin = 12;
           let yWeight = 0;
           const yBuffer = 90;
 
-          if (trailAbsoluteY >= bound.top - yBuffer && trailAbsoluteY < bound.top) {
-            yWeight = (trailAbsoluteY - (bound.top - yBuffer)) / yBuffer;
+          if (headAbsoluteY >= bound.top - yBuffer && headAbsoluteY < bound.top) {
+            yWeight = (headAbsoluteY - (bound.top - yBuffer)) / yBuffer;
             yWeight = Math.sin(yWeight * Math.PI / 2);
-          } else if (trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+          } else if (headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
             yWeight = 1;
-          } else if (trailAbsoluteY > bound.bottom && trailAbsoluteY <= bound.bottom + yBuffer) {
-            yWeight = 1 - (trailAbsoluteY - bound.bottom) / yBuffer;
+          } else if (headAbsoluteY > bound.bottom && headAbsoluteY <= bound.bottom + yBuffer) {
+            yWeight = 1 - (headAbsoluteY - bound.bottom) / yBuffer;
             yWeight = Math.sin(yWeight * Math.PI / 2);
           }
 
@@ -343,42 +307,127 @@ export class WebGLController {
             }
           }
 
-          if (Math.abs(deflection) > Math.abs(trailDeflection)) {
-            trailDeflection = deflection;
+          if (Math.abs(deflection) > Math.abs(headDeflection)) {
+            headDeflection = deflection;
+          }
+        }
+      }
+
+      const headDeflectedX = col.x + headDeflection;
+      let finalHeadX = headDeflectedX;
+      let headFontScale = 1;
+
+      if (colNearMouse) {
+        const headDx = headDeflectedX - mouseX;
+        const headDy = col.y - mouseY;
+        const headDist = Math.sqrt(headDx * headDx + headDy * headDy);
+        if (headDist < 120) {
+          finalHeadX += (120 - headDist) * 0.3 * (headDx > 0 ? 1 : -1);
+          headFontScale = 1 + (120 - headDist) * 0.003;
+        }
+      }
+
+      // Check if head falls inside an avoid box
+      let drawHead = true;
+      if (hasBounds) {
+        const headAbsoluteY = col.y + scrollY;
+        for (let i = 0; i < this.avoidBounds.length; i++) {
+          const bound = this.avoidBounds[i];
+          if (finalHeadX >= bound.left && finalHeadX <= bound.right &&
+              headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
+            drawHead = false;
+            break;
+          }
+        }
+      }
+
+      if (drawHead) {
+        setCtxFont(Math.floor(col.fontSize * headFontScale));
+        this.matrixCtx.fillStyle = `rgba(255, 255, 255, ${col.opacity * 0.95})`;
+        this.matrixCtx.shadowBlur = 6;
+        this.matrixCtx.shadowColor = `rgb(${r}, ${g}, ${b})`;
+        this.matrixCtx.fillText(char, finalHeadX, col.y);
+      }
+
+      // --- Draw Trail Characters ---
+      this.matrixCtx.shadowBlur = 0;
+
+      for (let j = 1; j <= trailLength; j++) {
+        const trailOffset = j * col.fontSize;
+        const trailAbsoluteY = col.y - trailOffset + scrollY;
+
+        let trailDeflection = 0;
+        if (colNearBounds) {
+          for (let i = 0; i < this.avoidBounds.length; i++) {
+            const bound = this.avoidBounds[i];
+            let deflection = 0;
+            const centerX = (bound.left + bound.right) / 2;
+            const margin = 12;
+            let yWeight = 0;
+            const yBuffer = 90;
+
+            if (trailAbsoluteY >= bound.top - yBuffer && trailAbsoluteY < bound.top) {
+              yWeight = (trailAbsoluteY - (bound.top - yBuffer)) / yBuffer;
+              yWeight = Math.sin(yWeight * Math.PI / 2);
+            } else if (trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+              yWeight = 1;
+            } else if (trailAbsoluteY > bound.bottom && trailAbsoluteY <= bound.bottom + yBuffer) {
+              yWeight = 1 - (trailAbsoluteY - bound.bottom) / yBuffer;
+              yWeight = Math.sin(yWeight * Math.PI / 2);
+            }
+
+            if (yWeight > 0) {
+              if (col.x < centerX) {
+                const targetX = bound.left - margin;
+                if (col.x > targetX) {
+                  deflection = (targetX - col.x) * yWeight;
+                }
+              } else {
+                const targetX = bound.right + margin;
+                if (col.x < targetX) {
+                  deflection = (targetX - col.x) * yWeight;
+                }
+              }
+            }
+
+            if (Math.abs(deflection) > Math.abs(trailDeflection)) {
+              trailDeflection = deflection;
+            }
           }
         }
 
         const trailDeflectedX = col.x + trailDeflection;
-
-        const trailDx = trailDeflectedX - this.mouseX;
-        const trailDy = (col.y - trailOffset) - this.mouseY;
-        const trailDist = Math.sqrt(trailDx * trailDx + trailDy * trailDy);
-
-        let trailOffsetX = 0;
+        let finalTrailX = trailDeflectedX;
         let trailFontScale = 1;
 
-        if (trailDist < 120) {
-          trailOffsetX = (120 - trailDist) * 0.3 * (trailDx > 0 ? 1 : -1);
-          trailFontScale = 1 + (120 - trailDist) * 0.003;
+        if (colNearMouse) {
+          const trailDx = trailDeflectedX - mouseX;
+          const trailDy = (col.y - trailOffset) - mouseY;
+          const trailDist = Math.sqrt(trailDx * trailDx + trailDy * trailDy);
+          if (trailDist < 120) {
+            finalTrailX += (120 - trailDist) * 0.3 * (trailDx > 0 ? 1 : -1);
+            trailFontScale = 1 + (120 - trailDist) * 0.003;
+          }
         }
 
-        const finalTrailX = trailDeflectedX + trailOffsetX;
-
+        // Check if trail character falls inside an avoid box
         let drawTrail = true;
-        for (const bound of this.avoidBounds) {
-          if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
-            trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
-            drawTrail = false;
-            break;
+        if (hasBounds) {
+          for (let i = 0; i < this.avoidBounds.length; i++) {
+            const bound = this.avoidBounds[i];
+            if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
+                trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+              drawTrail = false;
+              break;
+            }
           }
         }
 
         if (drawTrail) {
-          this.matrixCtx.shadowBlur = 0;
           const trailOpacity = col.opacity * (0.6 - (j / trailLength) * 0.5);
           this.matrixCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
-          this.matrixCtx.font = `${Math.floor(col.fontSize * trailFontScale)}px 'JetBrains Mono', monospace`;
-
+          setCtxFont(Math.floor(col.fontSize * trailFontScale));
+          
           const trailTokenIndex = (col.tokenIndex + j) % this.tokens.length;
           const trailChar = this.tokens[trailTokenIndex];
           this.matrixCtx.fillText(trailChar, finalTrailX, col.y - trailOffset);

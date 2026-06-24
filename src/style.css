@@ -229,6 +229,20 @@ body {
   background: transparent;
 }
 
+/* Matte glass overlay on top of matrix */
+#matrix-matte-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(10, 11, 13, 0.2) 0%, rgba(10, 11, 13, 0.45) 100%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
 /* Viewport HUD Overlays */
 .viewport-hud {
   position: fixed;
