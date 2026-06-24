@@ -34,6 +34,33 @@ export class WebGLController {
 
     // Set initial overlay color
     this.setMode('HERO');
+
+    // Setup scroll tracking for background horizontal parallax shift
+    this.currentScrollY = window.scrollY;
+    this.updateScrollShift();
+    
+    window.addEventListener('scroll', () => {
+      this.currentScrollY = window.scrollY;
+      this.updateScrollShift();
+    });
+    window.addEventListener('resize', () => {
+      this.updateScrollShift();
+    });
+  }
+
+  updateScrollShift() {
+    const width = window.innerWidth;
+    // Follow a smooth cosine wave alternating right/left
+    // y = 0: shift +maxShift (right)
+    // y = 1500 (Modeling): shift -maxShift (left)
+    // Period is roughly 3000px, which corresponds to frequency = Math.PI / 1500 = 0.00209
+    const maxShift = width * 0.22;
+    const shiftX = Math.cos(this.currentScrollY * 0.0021) * maxShift;
+    
+    const wrapper = document.getElementById('gif-bg-scroller-wrapper');
+    if (wrapper) {
+      wrapper.style.transform = `translate3d(${shiftX}px, 0, 0)`;
+    }
   }
 
   updateSectionBounds() {}
