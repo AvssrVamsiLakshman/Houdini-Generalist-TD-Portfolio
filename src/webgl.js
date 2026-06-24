@@ -32,35 +32,69 @@ export class WebGLController {
       GROOM: { r: 236, g: 204, b: 104 }
     };
 
-    // Set initial overlay color
+    // Setup scroll tracking and smooth horizontal translation variables
+    this.currentScrollY = window.scrollY;
+    this.targetShiftX = window.innerWidth * 0.24; // Starts on the right (Hero)
+    this.currentShiftX = this.targetShiftX;
+    this.shiftY = -this.currentScrollY * 0.15;
+
+    // Set initial mode to HERO
     this.setMode('HERO');
 
-    // Setup scroll tracking for background horizontal parallax shift
-    this.currentScrollY = window.scrollY;
-    this.updateScrollShift();
-    
+    // Start requestAnimationFrame loop for smooth rendering
+    this.animateLoop();
+
     window.addEventListener('scroll', () => {
       this.currentScrollY = window.scrollY;
-      this.updateScrollShift();
+      this.shiftY = -this.currentScrollY * 0.15;
     });
+    
     window.addEventListener('resize', () => {
-      this.updateScrollShift();
+      this.updateTargetX();
     });
   }
 
-  updateScrollShift() {
+  updateTargetX() {
     const width = window.innerWidth;
-    // Follow a smooth cosine wave alternating right/left
-    // y = 0: shift +maxShift (right)
-    // y = 1500 (Modeling): shift -maxShift (left)
-    // Period is roughly 3000px, which corresponds to frequency = Math.PI / 1500 = 0.00209
-    const maxShift = width * 0.24;
-    const shiftX = Math.cos(this.currentScrollY * 0.0021) * maxShift;
+    if (width <= 1024) {
+      this.targetShiftX = 0;
+    } else {
+      const modeSides = {
+        HERO: 'right',
+        SOP: 'left',
+        COP: 'right',
+        APEX: 'left',
+        CHOP: 'right',
+        CROWD: 'left',
+        GROOM: 'right',
+        CFX: 'left',
+        DOP: 'right',
+        VOP: 'left',
+        TOOLDEV: 'right',
+        LOP: 'left'
+      };
+      const side = modeSides[this.activeMode] || 'right';
+      const maxShift = width * 0.24;
+      this.targetShiftX = (side === 'left') ? -maxShift : maxShift;
+    }
+  }
+
+  animateLoop() {
+    const ease = 0.08;
+    const diff = this.targetShiftX - this.currentShiftX;
     
+    if (Math.abs(diff) > 0.1) {
+      this.currentShiftX += diff * ease;
+    } else {
+      this.currentShiftX = this.targetShiftX;
+    }
+
     const wrapper = document.getElementById('gif-bg-scroller-wrapper');
     if (wrapper) {
-      wrapper.style.transform = `translate3d(${shiftX}px, 0, 0)`;
+      wrapper.style.transform = `translate3d(${this.currentShiftX}px, ${this.shiftY}px, 0)`;
     }
+
+    requestAnimationFrame(() => this.animateLoop());
   }
 
   updateSectionBounds() {}
@@ -71,6 +105,7 @@ export class WebGLController {
 
   setMode(mode) {
     this.activeMode = mode;
+    this.updateTargetX();
 
     // Update HUD elements on screen
     const pathText = document.getElementById('hud-obj-path');
