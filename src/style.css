@@ -227,6 +227,8 @@ body {
   z-index: 2;
   pointer-events: none;
   background: transparent;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 /* Matte glass overlay on top of matrix */

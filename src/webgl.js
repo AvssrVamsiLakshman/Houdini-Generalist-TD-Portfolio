@@ -128,7 +128,7 @@ export class WebGLController {
     this.matrixCanvas.height = this.height;
 
     // Seamlessly update Matrix digital rain columns - increased density
-    const columnWidth = 2;
+    const columnWidth = 8;
     const columnsCount = Math.floor(this.width / columnWidth) + 1;
 
     if (this.matrixColumns.length < columnsCount) {
