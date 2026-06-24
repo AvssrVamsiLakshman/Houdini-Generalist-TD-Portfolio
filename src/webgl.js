@@ -54,7 +54,7 @@ export class WebGLController {
     // y = 0: shift +maxShift (right)
     // y = 1500 (Modeling): shift -maxShift (left)
     // Period is roughly 3000px, which corresponds to frequency = Math.PI / 1500 = 0.00209
-    const maxShift = width * 0.22;
+    const maxShift = width * 0.24;
     const shiftX = Math.cos(this.currentScrollY * 0.0021) * maxShift;
     
     const wrapper = document.getElementById('gif-bg-scroller-wrapper');

@@ -1426,34 +1426,25 @@ body {
 #gif-bg-scroller-wrapper {
   position: absolute;
   top: 0;
-  left: -25vw;
-  width: 150vw;
-  height: 100%;
-  will-change: transform;
-  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-#gif-bg-scroller {
-  position: absolute;
-  top: 0;
   left: 0;
-  width: 200%;
+  width: 100%;
   height: 100%;
-  background-image: url('./black-white-art.gif');
-  background-repeat: repeat-x;
-  background-size: auto 100%;
-  opacity: 0.15;
-  animation: scrollBg 35s linear infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-@keyframes scrollBg {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(-50%, 0, 0);
-  }
+#single-gif-bg {
+  width: min(750px, 85vw);
+  height: min(750px, 85vh);
+  background-image: url('./black-white-art.gif');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.28;
+  will-change: transform;
 }
 
 #gif-bg-overlay {
