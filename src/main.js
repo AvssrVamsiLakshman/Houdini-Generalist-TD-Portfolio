@@ -338,4 +338,28 @@ document.addEventListener('DOMContentLoaded', () => {
       contactForm.reset();
     });
   }
+
+  // --- 7. HUD Visibility Observer ---
+  const footer = document.querySelector('.app-footer');
+  const hud = document.querySelector('.viewport-hud');
+  const shelf = document.querySelector('.shelf-toolbar');
+  
+  if (footer && (hud || shelf)) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          hud?.classList.add('hud-hidden');
+          shelf?.classList.add('hud-hidden');
+        } else {
+          hud?.classList.remove('hud-hidden');
+          shelf?.classList.remove('hud-hidden');
+        }
+      });
+    }, {
+      root: null, // viewport
+      threshold: 0.05 // trigger when 5% of footer is visible
+    });
+    
+    observer.observe(footer);
+  }
 });

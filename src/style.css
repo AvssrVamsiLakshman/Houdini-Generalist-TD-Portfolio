@@ -3,8 +3,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Courier New', Courier, monospace !important;
-  font-weight: bold !important;
 }
 
 :root {
@@ -22,9 +20,9 @@
   --text-primary: #e6e9f0;
   --text-secondary: #9da3b1;
   --text-muted: #575c69;
-  --font-sans: 'Courier New', Courier, monospace;
-  --font-tech: 'Courier New', Courier, monospace;
-  --font-mono: 'Courier New', Courier, monospace;
+  --font-sans: 'Inter', sans-serif;
+  --font-tech: 'Orbitron', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --transition-speed: 0.3s;
   --header-height: 65px;
   --terminal-width: 340px;
@@ -224,6 +222,7 @@ body {
   font-size: clamp(9px, 0.9vw, 11px);
   padding: 15px;
   box-sizing: border-box;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
 .hud-corner {
@@ -312,6 +311,14 @@ body {
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
   pointer-events: auto;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.viewport-hud.hud-hidden,
+.shelf-toolbar.hud-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .shelf-tool-btn {

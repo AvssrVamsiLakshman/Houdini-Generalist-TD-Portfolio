@@ -89,23 +89,23 @@ export class WebGLController {
     if (width <= 1024) {
       this.targetShiftX = 0;
     } else {
-      const modeSides = {
-        HERO: 'right',
-        SOP: 'left',
-        COP: 'right',
-        APEX: 'left',
-        CHOP: 'right',
-        CROWD: 'left',
-        GROOM: 'right',
-        CFX: 'left',
-        DOP: 'right',
-        VOP: 'left',
-        TOOLDEV: 'right',
-        LOP: 'left'
+      const bgPositions = {
+        HERO: 'right',     // background shifts right (empty space)
+        SOP: 'right',      // text on left, background shifts right
+        COP: 'left',       // text on right, background shifts left
+        APEX: 'right',     // text on left, background shifts right
+        CHOP: 'left',      // text on right, background shifts left
+        CROWD: 'right',    // text on left, background shifts right
+        GROOM: 'left',     // text on right, background shifts left
+        CFX: 'right',      // text on left, background shifts right
+        DOP: 'left',       // text on right, background shifts left
+        VOP: 'right',      // text on left, background shifts right
+        TOOLDEV: 'left',   // text on right, background shifts left
+        LOP: 'right'       // text on left, background shifts right
       };
-      const side = modeSides[this.activeMode] || 'right';
+      const bgPos = bgPositions[this.activeMode] || 'right';
       const maxShift = width * 0.25;
-      this.targetShiftX = (side === 'left') ? -maxShift : maxShift;
+      this.targetShiftX = (bgPos === 'left') ? -maxShift : maxShift;
     }
   }
 
