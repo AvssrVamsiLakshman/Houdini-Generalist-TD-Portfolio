@@ -1689,9 +1689,17 @@ body {
   will-change: transform;
 }
 
-#single-gif-bg {
+#gif-bg-element {
+  position: relative;
   width: min(750px, 85vw);
   height: min(750px, 85vh);
+  mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+}
+
+#single-gif-bg {
+  width: 100%;
+  height: 100%;
   background-image: url('./black-white-art.gif');
   background-size: contain;
   background-repeat: no-repeat;
@@ -1702,12 +1710,16 @@ body {
 
 #gif-bg-tint {
   position: absolute;
-  width: min(750px, 85vw);
-  height: min(750px, 85vh);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   mix-blend-mode: multiply;
   z-index: 2;
   background-color: var(--active-node-color, var(--color-hero));
+  transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 1.0;
 }
 
 /* CSS Scroll Snapping for Desktop Viewports */
