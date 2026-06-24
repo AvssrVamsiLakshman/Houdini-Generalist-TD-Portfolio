@@ -829,7 +829,7 @@ body {
 }
 
 .section-hero .row-text-container {
-  border-right: 1px solid var(--border-color);
+  border-right: none;
 }
 
 .hero-card {
@@ -963,7 +963,7 @@ body {
   align-items: stretch;
   gap: 0;
   padding: 0;
-  border-top: 1px solid var(--border-color);
+  border-top: none;
   min-height: 100vh;
   width: 100%;
 }
@@ -1127,10 +1127,10 @@ body {
 
 /* Center divider lines */
 .section-topic:nth-child(even) .row-text-container {
-  border-right: 1px solid var(--border-color);
+  border-right: none;
 }
 .section-topic:nth-child(odd) .row-text-container {
-  border-left: 1px solid var(--border-color);
+  border-left: none;
 }
 
 .topic-label {
@@ -1174,7 +1174,7 @@ body {
 .app-footer {
   margin-top: 0;
   padding: 80px;
-  border-top: 1px solid var(--border-color);
+  border-top: none;
   border-radius: 0;
   border-left: none;
   border-right: none;
@@ -1345,18 +1345,7 @@ body {
 }
 
 /* Responsive Layout styling for widescreens, tablet, and mobile */
-@media (min-width: 1025px) {
-  html {
-    scroll-snap-type: y mandatory;
-    scroll-padding-top: var(--header-height);
-  }
-  .section-hero,
-  .section-topic,
-  .app-footer {
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-  }
-}
+/* Responsive Layout styling for widescreens, tablet, and mobile - scroll snap removed */
 
 /* Responsive Layout styling for tablet and mobile */
 @media (max-width: 1024px) {
