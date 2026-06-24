@@ -72,16 +72,7 @@ body {
   background: var(--accent-orange);
 }
 
-/* Background canvas */
-#webgl-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  pointer-events: auto;
-}
+
 
 /* Viewport HUD Overlays */
 .viewport-overlay {
@@ -217,33 +208,7 @@ body {
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 106, 0, 0.05);
 }
 
-/* Secondary matrix canvas overlay */
-#matrix-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 2;
-  pointer-events: none;
-  background: transparent;
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
-}
 
-/* Matte glass overlay on top of matrix */
-#matrix-matte-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 3;
-  pointer-events: none;
-  background: radial-gradient(circle at center, rgba(10, 11, 13, 0.2) 0%, rgba(10, 11, 13, 0.45) 100%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-}
 
 /* Viewport HUD Overlays */
 .viewport-hud {
