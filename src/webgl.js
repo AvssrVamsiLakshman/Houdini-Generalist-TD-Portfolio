@@ -127,8 +127,8 @@ export class WebGLController {
     this.matrixCanvas.width = this.width;
     this.matrixCanvas.height = this.height;
 
-    // Seamlessly update Matrix digital rain columns
-    const columnWidth = 22;
+    // Seamlessly update Matrix digital rain columns - increased density
+    const columnWidth = 14;
     const columnsCount = Math.floor(this.width / columnWidth) + 1;
     
     if (this.matrixColumns.length < columnsCount) {
@@ -306,75 +306,83 @@ export class WebGLController {
         this.matrixCtx.fillText(char, finalHeadX, col.y);
       }
 
-      let trailDeflection = 0;
-      const trailAbsoluteY = col.y - col.fontSize + this.currentScrollY;
+      const trailLength = 5;
+      for (let j = 1; j <= trailLength; j++) {
+        const trailOffset = j * col.fontSize;
+        const trailAbsoluteY = col.y - trailOffset + this.currentScrollY;
 
-      for (const bound of this.avoidBounds) {
-        let deflection = 0;
-        const centerX = (bound.left + bound.right) / 2;
-        const margin = 12;
-        let yWeight = 0;
-        const yBuffer = 90;
+        let trailDeflection = 0;
+        for (const bound of this.avoidBounds) {
+          let deflection = 0;
+          const centerX = (bound.left + bound.right) / 2;
+          const margin = 12;
+          let yWeight = 0;
+          const yBuffer = 90;
 
-        if (trailAbsoluteY >= bound.top - yBuffer && trailAbsoluteY < bound.top) {
-          yWeight = (trailAbsoluteY - (bound.top - yBuffer)) / yBuffer;
-          yWeight = Math.sin(yWeight * Math.PI / 2);
-        } else if (trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
-          yWeight = 1;
-        } else if (trailAbsoluteY > bound.bottom && trailAbsoluteY <= bound.bottom + yBuffer) {
-          yWeight = 1 - (trailAbsoluteY - bound.bottom) / yBuffer;
-          yWeight = Math.sin(yWeight * Math.PI / 2);
-        }
+          if (trailAbsoluteY >= bound.top - yBuffer && trailAbsoluteY < bound.top) {
+            yWeight = (trailAbsoluteY - (bound.top - yBuffer)) / yBuffer;
+            yWeight = Math.sin(yWeight * Math.PI / 2);
+          } else if (trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+            yWeight = 1;
+          } else if (trailAbsoluteY > bound.bottom && trailAbsoluteY <= bound.bottom + yBuffer) {
+            yWeight = 1 - (trailAbsoluteY - bound.bottom) / yBuffer;
+            yWeight = Math.sin(yWeight * Math.PI / 2);
+          }
 
-        if (yWeight > 0) {
-          if (col.x < centerX) {
-            const targetX = bound.left - margin;
-            if (col.x > targetX) {
-              deflection = (targetX - col.x) * yWeight;
+          if (yWeight > 0) {
+            if (col.x < centerX) {
+              const targetX = bound.left - margin;
+              if (col.x > targetX) {
+                deflection = (targetX - col.x) * yWeight;
+              }
+            } else {
+              const targetX = bound.right + margin;
+              if (col.x < targetX) {
+                deflection = (targetX - col.x) * yWeight;
+              }
             }
-          } else {
-            const targetX = bound.right + margin;
-            if (col.x < targetX) {
-              deflection = (targetX - col.x) * yWeight;
-            }
+          }
+
+          if (Math.abs(deflection) > Math.abs(trailDeflection)) {
+            trailDeflection = deflection;
           }
         }
 
-        if (Math.abs(deflection) > Math.abs(trailDeflection)) {
-          trailDeflection = deflection;
+        const trailDeflectedX = col.x + trailDeflection;
+
+        const trailDx = trailDeflectedX - this.mouseX;
+        const trailDy = (col.y - trailOffset) - this.mouseY;
+        const trailDist = Math.sqrt(trailDx * trailDx + trailDy * trailDy);
+        
+        let trailOffsetX = 0;
+        let trailFontScale = 1;
+        
+        if (trailDist < 120) {
+          trailOffsetX = (120 - trailDist) * 0.3 * (trailDx > 0 ? 1 : -1);
+          trailFontScale = 1 + (120 - trailDist) * 0.003;
         }
-      }
 
-      const trailDeflectedX = col.x + trailDeflection;
+        const finalTrailX = trailDeflectedX + trailOffsetX;
 
-      const trailDx = trailDeflectedX - this.mouseX;
-      const trailDy = (col.y - col.fontSize) - this.mouseY;
-      const trailDist = Math.sqrt(trailDx * trailDx + trailDy * trailDy);
-      
-      let trailOffsetX = 0;
-      let trailFontScale = 1;
-      
-      if (trailDist < 120) {
-        trailOffsetX = (120 - trailDist) * 0.3 * (trailDx > 0 ? 1 : -1);
-        trailFontScale = 1 + (120 - trailDist) * 0.003;
-      }
-
-      const finalTrailX = trailDeflectedX + trailOffsetX;
-
-      let drawTrail = true;
-      for (const bound of this.avoidBounds) {
-        if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
-            trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
-          drawTrail = false;
-          break;
+        let drawTrail = true;
+        for (const bound of this.avoidBounds) {
+          if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
+              trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+            drawTrail = false;
+            break;
+          }
         }
-      }
 
-      if (drawTrail) {
-        this.matrixCtx.shadowBlur = 0;
-        this.matrixCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${col.opacity * 0.55})`;
-        this.matrixCtx.font = `${Math.floor(col.fontSize * trailFontScale)}px 'JetBrains Mono', monospace`;
-        this.matrixCtx.fillText(char, finalTrailX, col.y - col.fontSize);
+        if (drawTrail) {
+          this.matrixCtx.shadowBlur = 0;
+          const trailOpacity = col.opacity * (0.6 - (j / trailLength) * 0.5);
+          this.matrixCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
+          this.matrixCtx.font = `${Math.floor(col.fontSize * trailFontScale)}px 'JetBrains Mono', monospace`;
+          
+          const trailTokenIndex = (col.tokenIndex + j) % this.tokens.length;
+          const trailChar = this.tokens[trailTokenIndex];
+          this.matrixCtx.fillText(trailChar, finalTrailX, col.y - trailOffset);
+        }
       }
 
       col.y += col.speed;
@@ -383,7 +391,7 @@ export class WebGLController {
         col.tokenIndex = Math.floor(Math.random() * this.tokens.length);
       }
 
-      if (col.y > this.height + 40) {
+      if (col.y > this.height + 120) {
         col.y = Math.random() * -120 - 20;
         col.speedFactor = 0.8 + Math.random() * 0.4;
         col.speed = (this.height / 3600) * col.speedFactor;
