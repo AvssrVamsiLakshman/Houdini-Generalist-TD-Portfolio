@@ -91,17 +91,17 @@ export class WebGLController {
     } else {
       const bgPositions = {
         HERO: 'right',     // background shifts right (empty space)
-        SOP: 'right',      // text on left, background shifts right
-        COP: 'left',       // text on right, background shifts left
-        APEX: 'right',     // text on left, background shifts right
-        CHOP: 'left',      // text on right, background shifts left
-        CROWD: 'right',    // text on left, background shifts right
-        GROOM: 'left',     // text on right, background shifts left
-        CFX: 'right',      // text on left, background shifts right
-        DOP: 'left',       // text on right, background shifts left
-        VOP: 'right',      // text on left, background shifts right
-        TOOLDEV: 'left',   // text on right, background shifts left
-        LOP: 'right'       // text on left, background shifts right
+        SOP: 'left',       // text on left, background shifts left (behind card)
+        COP: 'right',      // text on right, background shifts right (behind card)
+        APEX: 'left',      // text on left, background shifts left (behind card)
+        CHOP: 'right',     // text on right, background shifts right (behind card)
+        CROWD: 'left',     // text on left, background shifts left (behind card)
+        GROOM: 'right',    // text on right, background shifts right (behind card)
+        CFX: 'left',       // text on left, background shifts left (behind card)
+        DOP: 'right',      // text on right, background shifts right (behind card)
+        VOP: 'left',       // text on left, background shifts left (behind card)
+        TOOLDEV: 'right',  // text on right, background shifts right (behind card)
+        LOP: 'left'        // text on left, background shifts left (behind card)
       };
       const bgPos = bgPositions[this.activeMode] || 'right';
       const maxShift = width * 0.25;
