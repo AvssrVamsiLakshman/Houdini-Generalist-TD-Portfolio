@@ -44,6 +44,7 @@ export class WebGLController {
 
     // Initialize systems
     this.initMatrix();
+    this.initSpriteSheet();
     this.resize();
 
     window.addEventListener('resize', this.resize.bind(this));
@@ -79,6 +80,94 @@ export class WebGLController {
     ];
   }
 
+  initSpriteSheet() {
+    this.spriteCanvas = document.createElement('canvas');
+    this.spriteCtx = this.spriteCanvas.getContext('2d');
+    
+    // We have 80 tokens. Space them by 120px horizontally, 64px vertically
+    // 13 normal rows + 12 glowing head rows = 25 rows
+    this.spriteCanvas.width = 9600;
+    this.spriteCanvas.height = 1600;
+    
+    this.spriteCtx.font = "bold 14px 'JetBrains Mono', monospace";
+    this.spriteCtx.textAlign = 'left';
+    this.spriteCtx.textBaseline = 'top';
+    
+    const colors = [
+      { name: 'white', r: 255, g: 255, b: 255 },
+      { name: 'HERO', ...this.themeColors.HERO },
+      { name: 'SOP', ...this.themeColors.SOP },
+      { name: 'DOP', ...this.themeColors.DOP },
+      { name: 'COP', ...this.themeColors.COP },
+      { name: 'VOP', ...this.themeColors.VOP },
+      { name: 'LOP', ...this.themeColors.LOP },
+      { name: 'APEX', ...this.themeColors.APEX },
+      { name: 'CHOP', ...this.themeColors.CHOP },
+      { name: 'TOOLDEV', ...this.themeColors.TOOLDEV },
+      { name: 'CROWD', ...this.themeColors.CROWD },
+      { name: 'CFX', ...this.themeColors.CFX },
+      { name: 'GROOM', ...this.themeColors.GROOM }
+    ];
+    
+    this.spriteMap = {};
+    
+    // 1. Render Normal Sprites (white + 12 color themes)
+    for (let c = 0; c < colors.length; c++) {
+      const color = colors[c];
+      const colorStr = `rgb(${color.r},${color.g},${color.b})`;
+      this.spriteCtx.fillStyle = colorStr;
+      
+      for (let t = 0; t < this.tokens.length; t++) {
+        const token = this.tokens[t];
+        const x = t * 120 + 20;
+        const y = c * 64 + 20;
+        
+        this.spriteCtx.fillText(token, x, y);
+        
+        const metrics = this.spriteCtx.measureText(token);
+        const width = Math.ceil(metrics.width);
+        
+        this.spriteMap[`${token}_${color.name}`] = {
+          x,
+          y,
+          w: width,
+          h: 14
+        };
+      }
+    }
+
+    // 2. Render Glowing Head Sprites (12 color themes, text is white, shadow is theme color)
+    // Starts from index 1 (skipping 'white' as theme colors start at HERO)
+    for (let c = 1; c < colors.length; c++) {
+      const color = colors[c];
+      
+      this.spriteCtx.shadowBlur = 6;
+      this.spriteCtx.shadowColor = `rgb(${color.r},${color.g},${color.b})`;
+      this.spriteCtx.fillStyle = 'rgb(255,255,255)';
+      
+      for (let t = 0; t < this.tokens.length; t++) {
+        const token = this.tokens[t];
+        const x = t * 120 + 20;
+        const y = (12 + c) * 64 + 20;
+        
+        this.spriteCtx.fillText(token, x, y);
+        
+        const metrics = this.spriteCtx.measureText(token);
+        const width = Math.ceil(metrics.width);
+        
+        this.spriteMap[`${token}_head_${color.name}`] = {
+          x: x - 10,
+          y: y - 10,
+          w: width + 20,
+          h: 34
+        };
+      }
+    }
+    
+    // Reset shadow state on sprite context
+    this.spriteCtx.shadowBlur = 0;
+  }
+
   updateSectionBounds() {
     const sectionEls = document.querySelectorAll('section[id]');
     this.sectionBounds = Array.from(sectionEls).map(section => {
@@ -106,17 +195,39 @@ export class WebGLController {
 
   updateAvoidBounds() {
     const avoidElements = document.querySelectorAll('.hero-card, .video-card');
+    const margin = 12;
     this.avoidBounds = Array.from(avoidElements).map(el => {
       const rect = el.getBoundingClientRect();
       const scrollX = window.scrollX || window.pageXOffset;
       const scrollY = window.scrollY || window.pageYOffset;
+      const left = rect.left + scrollX - 8;
+      const right = rect.right + scrollX + 8;
       return {
-        left: rect.left + scrollX - 8,
-        right: rect.right + scrollX + 8,
+        left,
+        right,
         top: rect.top + scrollY - 8,
-        bottom: rect.bottom + scrollY + 8
+        bottom: rect.bottom + scrollY + 8,
+        centerX: (left + right) / 2,
+        targetLeft: left - margin,
+        targetRight: right + margin
       };
     });
+
+    // For each column, pre-filter the avoid bounds that overlap horizontally
+    // Margin of horizontal effect is 12px for deflection. We use a 16px search boundary.
+    const searchMargin = 16;
+    if (this.matrixColumns) {
+      for (let c = 0; c < this.matrixColumns.length; c++) {
+        const col = this.matrixColumns[c];
+        col.relevantBounds = [];
+        for (let b = 0; b < this.avoidBounds.length; b++) {
+          const bound = this.avoidBounds[b];
+          if (col.x >= bound.left - searchMargin && col.x <= bound.right + searchMargin) {
+            col.relevantBounds.push(bound);
+          }
+        }
+      }
+    }
   }
 
   resize() {
@@ -202,7 +313,7 @@ export class WebGLController {
                         (mode === 'CROWD') ? '#a55eea' :
                           (mode === 'CFX') ? '#ff7675' :
                             (mode === 'GROOM') ? '#eccc68' : '#ff8500';
-      solverText.style.color = hexColor;
+        solverText.style.color = hexColor;
     }
   }
 
@@ -217,69 +328,95 @@ export class WebGLController {
 
     if (!this.displayRain) return;
 
-    this.matrixCtx.textAlign = 'left';
-
-    // Precalculate bounds Y limits to optimize collision checks
-    let minBoundTop = Infinity;
-    let maxBoundBottom = -Infinity;
-    const hasBounds = this.avoidBounds.length > 0;
-    if (hasBounds) {
-      for (let i = 0; i < this.avoidBounds.length; i++) {
-        const bound = this.avoidBounds[i];
-        if (bound.top < minBoundTop) minBoundTop = bound.top;
-        if (bound.bottom > maxBoundBottom) maxBoundBottom = bound.bottom;
-      }
-    }
-
-    // Font cache to prevent redundant context setting
-    let activeFont = '';
-    const setCtxFont = (size) => {
-      const fontStr = `${size}px 'JetBrains Mono', monospace`;
-      if (activeFont !== fontStr) {
-        this.matrixCtx.font = fontStr;
-        activeFont = fontStr;
-      }
-    };
-
     const mouseX = this.mouseX;
     const mouseY = this.mouseY;
     const scrollY = this.currentScrollY;
 
     this.matrixColumns.forEach((col) => {
-      const char = this.tokens[col.tokenIndex];
+      // Skip drawing if the entire column is offscreen at the top or bottom
+      if (col.y < -20 || (col.y - 6 * col.fontSize) > this.height + 20) {
+        col.y += col.speed;
+        if (col.y > this.height + 120) {
+          col.y = Math.random() * -120 - 20;
+          col.speedFactor = 0.8 + Math.random() * 0.4;
+          col.speed = (this.height / 250) * col.speedFactor;
+          col.opacity = Math.random() * 0.4 + 0.6;
+          col.tokenIndex = Math.floor(Math.random() * this.tokens.length);
+        }
+        return;
+      }
+
       const absoluteY = col.y + scrollY;
 
-      // 1. Determine Section Mode Color
-      let matchedColor = this.themeColors.HERO;
-      for (let i = 0; i < this.sectionBounds.length; i++) {
-        const section = this.sectionBounds[i];
+      // 1. Determine Section Mode Color (using cached lookup or binary search)
+      let matchedMode = 'HERO';
+      let lastIdx = col.lastSectionIndex || 0;
+      if (lastIdx >= this.sectionBounds.length) lastIdx = 0;
+      
+      if (this.sectionBounds.length > 0) {
+        const section = this.sectionBounds[lastIdx];
         if (absoluteY >= section.top && absoluteY <= section.bottom) {
-          matchedColor = this.themeColors[section.mode] || this.themeColors.HERO;
-          break;
+          matchedMode = section.mode;
+        } else {
+          let found = false;
+          for (let i = 0; i < this.sectionBounds.length; i++) {
+            const sec = this.sectionBounds[i];
+            if (absoluteY >= sec.top && absoluteY <= sec.bottom) {
+              matchedMode = sec.mode;
+              col.lastSectionIndex = i;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            matchedMode = 'HERO';
+            col.lastSectionIndex = 0;
+          }
         }
       }
-      const r = Math.round(matchedColor.r);
-      const g = Math.round(matchedColor.g);
-      const b = Math.round(matchedColor.b);
+
+      // Check bypass flags for the active mode
+      if (this.bypassFlags && this.bypassFlags[matchedMode]) {
+        // Skip drawing, only update coordinates
+        col.y += col.speed;
+        if (col.y > this.height + 120) {
+          col.y = Math.random() * -120 - 20;
+          col.speedFactor = 0.8 + Math.random() * 0.4;
+          col.speed = (this.height / 250) * col.speedFactor;
+          col.opacity = Math.random() * 0.4 + 0.6;
+          col.tokenIndex = Math.floor(Math.random() * this.tokens.length);
+        }
+        return;
+      }
 
       // 2. Check mouse proximity horizontally
       const colNearMouse = Math.abs(col.x - mouseX) < 120;
 
-      // 3. Check bounds proximity vertically
+      // 3. Check bounds proximity vertically using only horizontally relevant bounds
       const trailLength = 5;
       const colMinY = col.y - trailLength * col.fontSize;
       const colMaxY = col.y;
-      const colNearBounds = hasBounds && (colMaxY + scrollY >= minBoundTop - 90 && colMinY + scrollY <= maxBoundBottom + 90);
+      
+      const relevantBounds = col.relevantBounds || [];
+      const hasRelevantBounds = relevantBounds.length > 0;
+      let colNearBounds = false;
+      if (hasRelevantBounds) {
+        for (let i = 0; i < relevantBounds.length; i++) {
+          const bound = relevantBounds[i];
+          if (colMaxY + scrollY >= bound.top - 90 && colMinY + scrollY <= bound.bottom + 90) {
+            colNearBounds = true;
+            break;
+          }
+        }
+      }
 
       // --- Draw Head Character ---
       let headDeflection = 0;
       if (colNearBounds) {
         const headAbsoluteY = col.y + scrollY;
-        for (let i = 0; i < this.avoidBounds.length; i++) {
-          const bound = this.avoidBounds[i];
+        for (let i = 0; i < relevantBounds.length; i++) {
+          const bound = relevantBounds[i];
           let deflection = 0;
-          const centerX = (bound.left + bound.right) / 2;
-          const margin = 12;
           let yWeight = 0;
           const yBuffer = 90;
 
@@ -294,15 +431,13 @@ export class WebGLController {
           }
 
           if (yWeight > 0) {
-            if (col.x < centerX) {
-              const targetX = bound.left - margin;
-              if (col.x > targetX) {
-                deflection = (targetX - col.x) * yWeight;
+            if (col.x < bound.centerX) {
+              if (col.x > bound.targetLeft) {
+                deflection = (bound.targetLeft - col.x) * yWeight;
               }
             } else {
-              const targetX = bound.right + margin;
-              if (col.x < targetX) {
-                deflection = (targetX - col.x) * yWeight;
+              if (col.x < bound.targetRight) {
+                deflection = (bound.targetRight - col.x) * yWeight;
               }
             }
           }
@@ -320,8 +455,9 @@ export class WebGLController {
       if (colNearMouse) {
         const headDx = headDeflectedX - mouseX;
         const headDy = col.y - mouseY;
-        const headDist = Math.sqrt(headDx * headDx + headDy * headDy);
-        if (headDist < 120) {
+        const distSq = headDx * headDx + headDy * headDy;
+        if (distSq < 14400) { // 120 * 120
+          const headDist = Math.sqrt(distSq);
           finalHeadX += (120 - headDist) * 0.3 * (headDx > 0 ? 1 : -1);
           headFontScale = 1 + (120 - headDist) * 0.003;
         }
@@ -329,12 +465,12 @@ export class WebGLController {
 
       // Check if head falls inside an avoid box
       let drawHead = true;
-      if (hasBounds) {
+      if (hasRelevantBounds) {
         const headAbsoluteY = col.y + scrollY;
-        for (let i = 0; i < this.avoidBounds.length; i++) {
-          const bound = this.avoidBounds[i];
+        for (let i = 0; i < relevantBounds.length; i++) {
+          const bound = relevantBounds[i];
           if (finalHeadX >= bound.left && finalHeadX <= bound.right &&
-            headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
+              headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
             drawHead = false;
             break;
           }
@@ -342,27 +478,33 @@ export class WebGLController {
       }
 
       if (drawHead) {
-        setCtxFont(Math.floor(col.fontSize * headFontScale));
-        this.matrixCtx.fillStyle = `rgba(255, 255, 255, ${col.opacity * 0.95})`;
-        this.matrixCtx.shadowBlur = 6;
-        this.matrixCtx.shadowColor = `rgb(${r}, ${g}, ${b})`;
-        this.matrixCtx.fillText(char, finalHeadX, col.y);
+        const char = this.tokens[col.tokenIndex];
+        const sprite = this.spriteMap[`${char}_head_${matchedMode}`] || this.spriteMap[`${char}_head_HERO`];
+        if (sprite) {
+          const scale = (col.fontSize * headFontScale) / 14;
+          const drawW = sprite.w * scale;
+          const drawH = sprite.h * scale;
+          const offsetX = 10 * scale;
+          const offsetY = 10 * scale;
+          this.matrixCtx.globalAlpha = col.opacity * 0.95;
+          this.matrixCtx.drawImage(
+            this.spriteCanvas,
+            sprite.x, sprite.y, sprite.w, sprite.h,
+            finalHeadX - offsetX, col.y - offsetY, drawW, drawH
+          );
+        }
       }
 
       // --- Draw Trail Characters ---
-      this.matrixCtx.shadowBlur = 0;
-
       for (let j = 1; j <= trailLength; j++) {
         const trailOffset = j * col.fontSize;
         const trailAbsoluteY = col.y - trailOffset + scrollY;
 
         let trailDeflection = 0;
         if (colNearBounds) {
-          for (let i = 0; i < this.avoidBounds.length; i++) {
-            const bound = this.avoidBounds[i];
+          for (let i = 0; i < relevantBounds.length; i++) {
+            const bound = relevantBounds[i];
             let deflection = 0;
-            const centerX = (bound.left + bound.right) / 2;
-            const margin = 12;
             let yWeight = 0;
             const yBuffer = 90;
 
@@ -377,15 +519,13 @@ export class WebGLController {
             }
 
             if (yWeight > 0) {
-              if (col.x < centerX) {
-                const targetX = bound.left - margin;
-                if (col.x > targetX) {
-                  deflection = (targetX - col.x) * yWeight;
+              if (col.x < bound.centerX) {
+                if (col.x > bound.targetLeft) {
+                  deflection = (bound.targetLeft - col.x) * yWeight;
                 }
               } else {
-                const targetX = bound.right + margin;
-                if (col.x < targetX) {
-                  deflection = (targetX - col.x) * yWeight;
+                if (col.x < bound.targetRight) {
+                  deflection = (bound.targetRight - col.x) * yWeight;
                 }
               }
             }
@@ -403,8 +543,9 @@ export class WebGLController {
         if (colNearMouse) {
           const trailDx = trailDeflectedX - mouseX;
           const trailDy = (col.y - trailOffset) - mouseY;
-          const trailDist = Math.sqrt(trailDx * trailDx + trailDy * trailDy);
-          if (trailDist < 120) {
+          const distSq = trailDx * trailDx + trailDy * trailDy;
+          if (distSq < 14400) {
+            const trailDist = Math.sqrt(distSq);
             finalTrailX += (120 - trailDist) * 0.3 * (trailDx > 0 ? 1 : -1);
             trailFontScale = 1 + (120 - trailDist) * 0.003;
           }
@@ -412,11 +553,11 @@ export class WebGLController {
 
         // Check if trail character falls inside an avoid box
         let drawTrail = true;
-        if (hasBounds) {
-          for (let i = 0; i < this.avoidBounds.length; i++) {
-            const bound = this.avoidBounds[i];
+        if (hasRelevantBounds) {
+          for (let i = 0; i < relevantBounds.length; i++) {
+            const bound = relevantBounds[i];
             if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
-              trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+                trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
               drawTrail = false;
               break;
             }
@@ -424,13 +565,20 @@ export class WebGLController {
         }
 
         if (drawTrail) {
-          const trailOpacity = col.opacity * (0.6 - (j / trailLength) * 0.5);
-          this.matrixCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
-          setCtxFont(Math.floor(col.fontSize * trailFontScale));
-
           const trailTokenIndex = (col.tokenIndex + j) % this.tokens.length;
           const trailChar = this.tokens[trailTokenIndex];
-          this.matrixCtx.fillText(trailChar, finalTrailX, col.y - trailOffset);
+          const sprite = this.spriteMap[`${trailChar}_${matchedMode}`];
+          if (sprite) {
+            const destH = col.fontSize * trailFontScale;
+            const destW = (sprite.w / 14) * destH;
+            const trailOpacity = col.opacity * (0.6 - (j / trailLength) * 0.5);
+            this.matrixCtx.globalAlpha = trailOpacity;
+            this.matrixCtx.drawImage(
+              this.spriteCanvas,
+              sprite.x, sprite.y, sprite.w, sprite.h,
+              finalTrailX, col.y - trailOffset, destW, destH
+            );
+          }
         }
       }
 
@@ -448,5 +596,8 @@ export class WebGLController {
         col.tokenIndex = Math.floor(Math.random() * this.tokens.length);
       }
     });
+
+    // Reset canvas alpha
+    this.matrixCtx.globalAlpha = 1.0;
   }
 }
