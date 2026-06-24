@@ -302,9 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = document.getElementById('visitor-name').value.trim();
       const phone = document.getElementById('visitor-phone').value.trim();
       const email = document.getElementById('visitor-email').value.trim();
+      const company = document.getElementById('visitor-company').value.trim() || '(Optional)';
 
       // Formulate message
-      const textMessage = `Hello Vamsi, I visited your Houdini TD Portfolio!\n\n*HDA Solver Config Cooked:*\n- *Name:* ${name}\n- *Phone:* ${phone}\n- *Email:* ${email}`;
+      const textMessage = `Hello A.v.s.s.r. Vamsi Lakshman , I visited your Houdini TD Portfolio!\n\n*My Info:*\n* *Name:* ${name}\n* *Phone:* ${phone}\n* *Email:* ${email}\n* *Company/ Organization:* ${company}\n\nYou Can Msg Me Here\nI Do Reply Here`;
       const whatsappUrl = `https://api.whatsapp.com/send?phone=919494191198&text=${encodeURIComponent(textMessage)}`;
 
       // Open redirect solver
