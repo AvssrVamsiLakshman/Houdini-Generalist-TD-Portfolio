@@ -128,7 +128,7 @@ export class WebGLController {
     this.matrixCanvas.height = this.height;
 
     // Seamlessly update Matrix digital rain columns - increased density
-    const columnWidth = 8;
+    const columnWidth = 2;
     const columnsCount = Math.floor(this.width / columnWidth) + 1;
 
     if (this.matrixColumns.length < columnsCount) {
@@ -334,7 +334,7 @@ export class WebGLController {
         for (let i = 0; i < this.avoidBounds.length; i++) {
           const bound = this.avoidBounds[i];
           if (finalHeadX >= bound.left && finalHeadX <= bound.right &&
-              headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
+            headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
             drawHead = false;
             break;
           }
@@ -416,7 +416,7 @@ export class WebGLController {
           for (let i = 0; i < this.avoidBounds.length; i++) {
             const bound = this.avoidBounds[i];
             if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
-                trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+              trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
               drawTrail = false;
               break;
             }
@@ -427,7 +427,7 @@ export class WebGLController {
           const trailOpacity = col.opacity * (0.6 - (j / trailLength) * 0.5);
           this.matrixCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
           setCtxFont(Math.floor(col.fontSize * trailFontScale));
-          
+
           const trailTokenIndex = (col.tokenIndex + j) % this.tokens.length;
           const trailChar = this.tokens[trailTokenIndex];
           this.matrixCtx.fillText(trailChar, finalTrailX, col.y - trailOffset);
