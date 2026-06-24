@@ -1693,8 +1693,10 @@ body {
   position: relative;
   width: min(750px, 85vw);
   height: min(750px, 85vh);
-  mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  border-radius: 50%;
+  overflow: hidden;
+  mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
 }
 
 #single-gif-bg {
@@ -1706,6 +1708,7 @@ body {
   background-position: center;
   opacity: 1.0;
   will-change: transform;
+  border-radius: 50%;
 }
 
 #gif-bg-tint {
@@ -1718,10 +1721,11 @@ body {
   mix-blend-mode: multiply;
   z-index: 2;
   background-color: var(--active-node-color, var(--color-hero));
-  mask-image: radial-gradient(ellipse at center, black 50%, transparent 95%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 95%);
+  mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
   transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   opacity: 1.0;
+  border-radius: 50%;
 }
 
 /* CSS Scroll Snapping for Desktop Viewports */
