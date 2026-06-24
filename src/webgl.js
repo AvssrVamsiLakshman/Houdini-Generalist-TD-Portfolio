@@ -8,11 +8,11 @@ export class WebGLController {
     this.vexParams = { frequency: 7.5, amplitude: 0.9, speed: 2.0 };
     this.sopParams = { extrude: 1.6, radius: 3.0 };
     this.dopParams = { turbulence: 2.25, wind: 1.8 };
-    this.bypassFlags = { 
-      SOP: false, DOP: false, COP: false, VOP: false, LOP: false, 
-      APEX: false, CHOP: false, TOOLDEV: false, CROWD: false, CFX: false, GROOM: false 
+    this.bypassFlags = {
+      SOP: false, DOP: false, COP: false, VOP: false, LOP: false,
+      APEX: false, CHOP: false, TOOLDEV: false, CROWD: false, CFX: false, GROOM: false
     };
-    
+
     this.displayGrid = true;
     this.displayRain = true;
     this.activeMode = 'HERO';
@@ -48,7 +48,7 @@ export class WebGLController {
 
     window.addEventListener('resize', this.resize.bind(this));
     window.addEventListener('mousemove', this.onMouseMove.bind(this));
-    
+
     window.addEventListener('scroll', () => {
       this.currentScrollY = window.scrollY;
       this.updateSectionBounds();
@@ -68,13 +68,13 @@ export class WebGLController {
 
     // Monospace Matrix tokens (VEX script parts, Katakana, variables, numbers)
     this.tokens = [
-      'v@P', 'v@N', 'v@v', 'f@radius', 'f@age', 'f@life', 'i@id', 'chf()', 'chv()', 'chi()', 'chp()', 
-      'attribwrangle', 'pointwrangle', 'setpointattrib', 'addpoint', 'pcopen', 'noise', 'curlnoise', 
-      'fit', 'clamp', 'normalize', 'cross', 'dot', 'length', 'distance', 'vector', 'matrix', 'float', 
-      'int', 'string', 'struct', 'import', 'SOP', 'DOP', 'LOP', 'VOP', 'TOP', 'CHOP', 'ROP', 'COP', 
-      'APEX', 'KINEFX', 'SOLVER', 'NET', 'ASSET', 'karma', 'mantra', 'materialx', 'pyside', 'hda', 
-      'ｦ', 'ｧ', 'ｨ', 'ｩ', 'ｪ', 'ｫ', 'ｬ', 'ｭ', 'ｮ', 'ｯ', 'ｰ', 'ｱ', 'ｲ', 'ｳ', 'ｴ', 'ｵ', 'ｶ', 'ｷ', 'ｸ', 
-      'ｹ', 'ｺ', 'ｻ', 'ｼ', 'ｽ', 'ｾ', 'ｿ', 'ﾀ', 'ﾁ', 'ﾂ', 'ﾃ', 'ﾄ', 'ﾅ', 'ﾆ', 'ﾇ', 'ﾈ', 'ﾉ', 
+      'v@P', 'v@N', 'v@v', 'f@radius', 'f@age', 'f@life', 'i@id', 'chf()', 'chv()', 'chi()', 'chp()',
+      'attribwrangle', 'pointwrangle', 'setpointattrib', 'addpoint', 'pcopen', 'noise', 'curlnoise',
+      'fit', 'clamp', 'normalize', 'cross', 'dot', 'length', 'distance', 'vector', 'matrix', 'float',
+      'int', 'string', 'struct', 'import', 'SOP', 'DOP', 'LOP', 'VOP', 'TOP', 'CHOP', 'ROP', 'COP',
+      'APEX', 'KINEFX', 'SOLVER', 'NET', 'ASSET', 'karma', 'mantra', 'materialx', 'pyside', 'hda',
+      'ｦ', 'ｧ', 'ｨ', 'ｩ', 'ｪ', 'ｫ', 'ｬ', 'ｭ', 'ｮ', 'ｯ', 'ｰ', 'ｱ', 'ｲ', 'ｳ', 'ｴ', 'ｵ', 'ｶ', 'ｷ', 'ｸ',
+      'ｹ', 'ｺ', 'ｻ', 'ｼ', 'ｽ', 'ｾ', 'ｿ', 'ﾀ', 'ﾁ', 'ﾂ', 'ﾃ', 'ﾄ', 'ﾅ', 'ﾆ', 'ﾇ', 'ﾈ', 'ﾉ',
       '∑', '√', '∫', '∂', 'θ', 'λ', 'π', '∞', '×', '÷', 'Δ', 'Ω', '0', '1', '0', '1'
     ];
   }
@@ -128,9 +128,9 @@ export class WebGLController {
     this.matrixCanvas.height = this.height;
 
     // Seamlessly update Matrix digital rain columns - increased density
-    const columnWidth = 8;
+    const columnWidth = 2;
     const columnsCount = Math.floor(this.width / columnWidth) + 1;
-    
+
     if (this.matrixColumns.length < columnsCount) {
       const start = this.matrixColumns.length;
       for (let i = start; i < columnsCount; i++) {
@@ -169,7 +169,7 @@ export class WebGLController {
     // Update HUD elements on screen
     const pathText = document.getElementById('hud-obj-path');
     const solverText = document.getElementById('hud-active-solver');
-    
+
     if (pathText) {
       let path = '/obj';
       if (mode === 'SOP') path = '/obj/geo1/modeling_sop';
@@ -183,7 +183,7 @@ export class WebGLController {
       else if (mode === 'CROWD') path = '/obj/crowd_simulation1/crowdsolver1';
       else if (mode === 'CFX') path = '/obj/vellum_character_fx1/vellumsolver1';
       else if (mode === 'GROOM') path = '/obj/hair_groom1/guidegroom1';
-      
+
       pathText.textContent = path;
     }
 
@@ -191,17 +191,17 @@ export class WebGLController {
       solverText.textContent = `${mode}_SOLVER`;
       solverText.className = '';
       const hexColor = (mode === 'HERO') ? '#ff8500' :
-                        (mode === 'SOP') ? '#45b3e3' :
-                        (mode === 'DOP') ? '#2ecc71' :
-                        (mode === 'COP') ? '#f1c40f' :
-                        (mode === 'VOP') ? '#e056fd' :
-                        (mode === 'LOP') ? '#00d2d3' :
-                        (mode === 'APEX') ? '#5f27cd' :
-                        (mode === 'CHOP') ? '#26de81' :
-                        (mode === 'TOOLDEV') ? '#ff4757' :
+        (mode === 'SOP') ? '#45b3e3' :
+          (mode === 'DOP') ? '#2ecc71' :
+            (mode === 'COP') ? '#f1c40f' :
+              (mode === 'VOP') ? '#e056fd' :
+                (mode === 'LOP') ? '#00d2d3' :
+                  (mode === 'APEX') ? '#5f27cd' :
+                    (mode === 'CHOP') ? '#26de81' :
+                      (mode === 'TOOLDEV') ? '#ff4757' :
                         (mode === 'CROWD') ? '#a55eea' :
-                        (mode === 'CFX') ? '#ff7675' :
-                        (mode === 'GROOM') ? '#eccc68' : '#ff8500';
+                          (mode === 'CFX') ? '#ff7675' :
+                            (mode === 'GROOM') ? '#eccc68' : '#ff8500';
       solverText.style.color = hexColor;
     }
   }
@@ -236,7 +236,7 @@ export class WebGLController {
 
       let headDeflection = 0;
       const headAbsoluteY = col.y + this.currentScrollY;
-      
+
       for (const bound of this.avoidBounds) {
         let deflection = 0;
         const centerX = (bound.left + bound.right) / 2;
@@ -278,10 +278,10 @@ export class WebGLController {
       const headDx = headDeflectedX - this.mouseX;
       const headDy = col.y - this.mouseY;
       const headDist = Math.sqrt(headDx * headDx + headDy * headDy);
-      
+
       let headOffsetX = 0;
       let headFontScale = 1;
-      
+
       if (headDist < 120) {
         headOffsetX = (120 - headDist) * 0.3 * (headDx > 0 ? 1 : -1);
         headFontScale = 1 + (120 - headDist) * 0.003;
@@ -293,7 +293,7 @@ export class WebGLController {
       let drawHead = true;
       for (const bound of this.avoidBounds) {
         if (finalHeadX >= bound.left && finalHeadX <= bound.right &&
-            headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
+          headAbsoluteY >= bound.top && headAbsoluteY <= bound.bottom) {
           drawHead = false;
           break;
         }
@@ -353,10 +353,10 @@ export class WebGLController {
         const trailDx = trailDeflectedX - this.mouseX;
         const trailDy = (col.y - trailOffset) - this.mouseY;
         const trailDist = Math.sqrt(trailDx * trailDx + trailDy * trailDy);
-        
+
         let trailOffsetX = 0;
         let trailFontScale = 1;
-        
+
         if (trailDist < 120) {
           trailOffsetX = (120 - trailDist) * 0.3 * (trailDx > 0 ? 1 : -1);
           trailFontScale = 1 + (120 - trailDist) * 0.003;
@@ -367,7 +367,7 @@ export class WebGLController {
         let drawTrail = true;
         for (const bound of this.avoidBounds) {
           if (finalTrailX >= bound.left && finalTrailX <= bound.right &&
-              trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
+            trailAbsoluteY >= bound.top && trailAbsoluteY <= bound.bottom) {
             drawTrail = false;
             break;
           }
@@ -378,7 +378,7 @@ export class WebGLController {
           const trailOpacity = col.opacity * (0.6 - (j / trailLength) * 0.5);
           this.matrixCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
           this.matrixCtx.font = `${Math.floor(col.fontSize * trailFontScale)}px 'JetBrains Mono', monospace`;
-          
+
           const trailTokenIndex = (col.tokenIndex + j) % this.tokens.length;
           const trailChar = this.tokens[trailTokenIndex];
           this.matrixCtx.fillText(trailChar, finalTrailX, col.y - trailOffset);
