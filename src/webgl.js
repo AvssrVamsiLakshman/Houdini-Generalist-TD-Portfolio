@@ -111,12 +111,6 @@ export class WebGLController {
       solverText.style.color = hexColor;
     }
 
-    // Smoothly transition background color overlay to match mode
-    const color = this.themeColors[mode] || this.themeColors.HERO;
-    const overlay = document.getElementById('gif-bg-overlay');
-    if (overlay) {
-      overlay.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
-    }
   }
 
   animate() {}

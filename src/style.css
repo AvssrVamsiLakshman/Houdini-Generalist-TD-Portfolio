@@ -8,7 +8,7 @@
 }
 
 :root {
-  --bg-primary: #0a0b0d;
+  --bg-primary: #000000;
   --bg-secondary: #111215;
   --bg-tertiary: #18191d;
   --bg-workstation: rgba(17, 18, 21, 0.70);
@@ -1410,7 +1410,7 @@ body {
   }
 }
 
-/* Infinitely Scrolling GIF Background */
+/* Seamless Single GIF Background */
 #gif-bg-container {
   position: fixed;
   top: 0;
@@ -1420,7 +1420,7 @@ body {
   z-index: 1;
   pointer-events: none;
   overflow: hidden;
-  background-color: #0a0b0d;
+  background-color: var(--bg-primary);
 }
 
 #gif-bg-scroller-wrapper {
@@ -1445,16 +1445,6 @@ body {
   background-position: center;
   opacity: 0.28;
   will-change: transform;
-}
-
-#gif-bg-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgb(255, 133, 0);
-  mix-blend-mode: screen;
-  opacity: 0.7;
-  transition: background-color 0.8s ease;
+  mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
 }
