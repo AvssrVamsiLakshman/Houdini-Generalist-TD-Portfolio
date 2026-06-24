@@ -139,7 +139,7 @@ export class WebGLController {
           x: i * columnWidth,
           y: Math.random() * -this.height * 1.5,
           speedFactor: speedFactor,
-          speed: (this.height / 3600) * speedFactor,
+          speed: (this.height / 450) * speedFactor,
           opacity: Math.random() * 0.4 + 0.6,
           fontSize: Math.floor(Math.random() * 6) + 10,
           tokenIndex: Math.floor(Math.random() * this.tokens.length)
@@ -151,7 +151,7 @@ export class WebGLController {
 
     this.matrixColumns.forEach((col, idx) => {
       col.x = idx * columnWidth;
-      col.speed = (this.height / 3600) * col.speedFactor;
+      col.speed = (this.height / 450) * col.speedFactor;
     });
 
     this.updateSectionBounds();
@@ -394,7 +394,7 @@ export class WebGLController {
       if (col.y > this.height + 120) {
         col.y = Math.random() * -120 - 20;
         col.speedFactor = 0.8 + Math.random() * 0.4;
-        col.speed = (this.height / 3600) * col.speedFactor;
+        col.speed = (this.height / 450) * col.speedFactor;
         col.opacity = Math.random() * 0.4 + 0.6;
         col.tokenIndex = Math.floor(Math.random() * this.tokens.length);
       }
