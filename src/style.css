@@ -1674,7 +1674,6 @@ body {
   pointer-events: none;
   overflow: hidden;
   background-color: var(--bg-primary);
-  opacity: 0.28;
 }
 
 #gif-bg-scroller-wrapper {
@@ -1697,6 +1696,7 @@ body {
   overflow: hidden;
   mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
   -webkit-mask-image: radial-gradient(ellipse at center, black 50%, transparent 90%);
+  opacity: 0.28;
 }
 
 #single-gif-bg {
@@ -1726,6 +1726,43 @@ body {
   transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
   opacity: 1.0;
   border-radius: 50%;
+}
+
+#gif-bg-glow-ring {
+  position: absolute;
+  width: min(750px, 85vw);
+  height: min(750px, 85vh);
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 50%;
+  border: 1.5px solid rgba(var(--active-node-color-rgb, 255, 133, 0), 0.7);
+  box-shadow: 0 0 10px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.8),
+              inset 0 0 8px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.4);
+  animation: border-pulse 3s ease-in-out infinite;
+  transition: border-color 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, box-shadow, border-color;
+}
+
+@keyframes border-pulse {
+  0% {
+    transform: scale(1.0);
+    box-shadow: 0 0 10px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.8),
+                inset 0 0 8px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.4);
+    border-color: rgba(var(--active-node-color-rgb, 255, 133, 0), 0.7);
+  }
+  50% {
+    transform: scale(1.015);
+    box-shadow: 0 0 25px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.95),
+                inset 0 0 14px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.6);
+    border-color: rgba(var(--active-node-color-rgb, 255, 133, 0), 0.95);
+  }
+  100% {
+    transform: scale(1.0);
+    box-shadow: 0 0 10px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.8),
+                inset 0 0 8px rgba(var(--active-node-color-rgb, 255, 133, 0), 0.4);
+    border-color: rgba(var(--active-node-color-rgb, 255, 133, 0), 0.7);
+  }
 }
 
 /* CSS Scroll Snapping for Desktop Viewports */
