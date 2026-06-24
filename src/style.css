@@ -1455,6 +1455,20 @@ body {
   -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
 }
 
+#gif-bg-tint {
+  position: absolute;
+  width: min(750px, 85vw);
+  height: min(750px, 85vh);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 2;
+  background-color: var(--active-node-color, var(--color-hero));
+  mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  opacity: 0.15;
+}
+
 /* CSS Scroll Snapping for Desktop Viewports */
 @media (min-width: 1025px) {
   html {

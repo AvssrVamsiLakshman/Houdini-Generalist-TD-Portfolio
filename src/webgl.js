@@ -147,6 +147,11 @@ export class WebGLController {
     this.updateTargetX();
     this.updateScrollShift();
 
+    // Set active node color variables for background tinting
+    const color = this.themeColors[mode] || this.themeColors.HERO;
+    document.documentElement.style.setProperty('--active-node-color', `rgb(${color.r}, ${color.g}, ${color.b})`);
+    document.documentElement.style.setProperty('--active-node-color-rgb', `${color.r}, ${color.g}, ${color.b}`);
+
     // Update HUD elements on screen
     const pathText = document.getElementById('hud-obj-path');
     const solverText = document.getElementById('hud-active-solver');
