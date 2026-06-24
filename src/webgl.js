@@ -1,22 +1,7 @@
-import gifUrl from './black-white-art.gif';
-
 export class WebGLController {
   constructor(webglCanvasId) {
     this.webglCanvas = document.getElementById(webglCanvasId) || document.createElement('div');
     
-    // Create container for flowing GIF particles
-    this.bgContainer = document.createElement('div');
-    this.bgContainer.id = 'gif-bg-container';
-    this.bgContainer.style.position = 'fixed';
-    this.bgContainer.style.top = '0';
-    this.bgContainer.style.left = '0';
-    this.bgContainer.style.width = '100vw';
-    this.bgContainer.style.height = '100vh';
-    this.bgContainer.style.zIndex = '1';
-    this.bgContainer.style.pointerEvents = 'none';
-    this.bgContainer.style.overflow = 'hidden';
-    document.body.appendChild(this.bgContainer);
-
     // Simulation & interaction parameters (preserved for main.js compatibility)
     this.vexParams = { frequency: 7.5, amplitude: 0.9, speed: 2.0 };
     this.sopParams = { extrude: 1.6, radius: 3.0 };
@@ -47,50 +32,11 @@ export class WebGLController {
       GROOM: { r: 236, g: 204, b: 104 }
     };
 
-    this.particles = [];
-    this.sectionBounds = [];
-    this.currentScrollY = window.scrollY;
-
-    // Load bounds & start simulation
-    this.updateSectionBounds();
-    window.addEventListener('scroll', () => {
-      this.currentScrollY = window.scrollY;
-      this.updateSectionBounds();
-    });
-    window.addEventListener('resize', () => {
-      this.updateSectionBounds();
-    });
-    window.addEventListener('load', () => {
-      this.updateSectionBounds();
-    });
-
-    this.animate();
+    // Set initial overlay color
+    this.setMode('HERO');
   }
 
-  updateSectionBounds() {
-    const sectionEls = document.querySelectorAll('section[id]');
-    this.sectionBounds = Array.from(sectionEls).map(section => {
-      const top = section.offsetTop;
-      const height = section.offsetHeight;
-      const mode = section.getAttribute('data-mode') || 'HERO';
-      return {
-        top,
-        bottom: top + height,
-        mode
-      };
-    });
-
-    const footer = document.querySelector('footer');
-    if (footer) {
-      const top = footer.offsetTop;
-      const height = footer.offsetHeight;
-      this.sectionBounds.push({
-        top,
-        bottom: top + height,
-        mode: 'TOOLDEV'
-      });
-    }
-  }
+  updateSectionBounds() {}
 
   updateAvoidBounds() {}
 
@@ -137,119 +83,16 @@ export class WebGLController {
                             (mode === 'GROOM') ? '#eccc68' : '#ff8500';
       solverText.style.color = hexColor;
     }
-  }
 
-  spawnParticle() {
-    const size = 60 + Math.random() * 80;
-    const p = {
-      el: document.createElement('img'),
-      y: -150,
-      speed: 0.8 + Math.random() * 1.5,
-      size,
-      pathType: Math.floor(Math.random() * 3),
-      phase: Math.random() * Math.PI * 2,
-      opacity: 0.12 + Math.random() * 0.18,
-      lastSectionIndex: 0
-    };
-
-    p.el.src = gifUrl;
-    p.el.style.position = 'absolute';
-    p.el.style.width = `${size}px`;
-    p.el.style.height = `${size}px`;
-    p.el.style.objectFit = 'contain';
-    p.el.style.pointerEvents = 'none';
-    p.el.style.willChange = 'transform, opacity, filter';
-    
-    this.bgContainer.appendChild(p.el);
-    this.particles.push(p);
-  }
-
-  animate() {
-    requestAnimationFrame(this.animate.bind(this));
-    this.renderMatrixRain();
-  }
-
-  renderMatrixRain() {
-    if (!this.displayRain) {
-      this.particles.forEach(p => p.el.remove());
-      this.particles = [];
-      return;
-    }
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const scrollY = this.currentScrollY;
-
-    // Spawn new particles to maintain density
-    if (this.particles.length < 20 && Math.random() > 0.96) {
-      this.spawnParticle();
-    }
-
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i];
-      p.y += p.speed;
-
-      let x = 0;
-      const t = p.y / height;
-
-      // S-shape paths mapping exactly to drawings
-      if (p.pathType === 0) {
-        // Path A: Flows from top-right, curves left under center, curves right towards bottom
-        const baseX = width * (0.8 - 0.6 * Math.sin(t * Math.PI));
-        x = baseX + Math.sin(p.y * 0.005 + p.phase) * 50;
-      } else if (p.pathType === 1) {
-        // Path B: Flows from top-left, curves right under center, curves left towards bottom
-        const baseX = width * (0.2 + 0.6 * Math.sin(t * Math.PI));
-        x = baseX + Math.sin(p.y * 0.005 + p.phase) * 50;
-      } else {
-        // Path C: Central deep S-curve flow
-        const baseX = width * 0.5 + Math.sin(t * Math.PI * 0.5) * 80;
-        x = baseX + Math.sin(p.y * 0.003 + p.phase) * 150;
-      }
-
-      // Determine Section Mode for coloring based on absolute vertical offset
-      const absoluteY = p.y + scrollY;
-      let matchedMode = 'HERO';
-      let lastIdx = p.lastSectionIndex || 0;
-      if (lastIdx >= this.sectionBounds.length) lastIdx = 0;
-
-      if (this.sectionBounds.length > 0) {
-        const section = this.sectionBounds[lastIdx];
-        if (absoluteY >= section.top && absoluteY <= section.bottom) {
-          matchedMode = section.mode;
-        } else {
-          let found = false;
-          for (let s = 0; s < this.sectionBounds.length; s++) {
-            const sec = this.sectionBounds[s];
-            if (absoluteY >= sec.top && absoluteY <= sec.bottom) {
-              matchedMode = sec.mode;
-              p.lastSectionIndex = s;
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            matchedMode = 'HERO';
-            p.lastSectionIndex = 0;
-          }
-        }
-      }
-
-      // Check bypass flag for active mode
-      if (this.bypassFlags[matchedMode]) {
-        p.el.style.opacity = '0';
-      } else {
-        const color = this.themeColors[matchedMode] || this.themeColors.HERO;
-        p.el.style.transform = `translate3d(${x - p.size / 2}px, ${p.y}px, 0)`;
-        p.el.style.opacity = p.opacity;
-        p.el.style.filter = `drop-shadow(0 0 15px rgb(${color.r}, ${color.g}, ${color.b})) brightness(1.2)`;
-      }
-
-      // Remove offscreen particles
-      if (p.y > height + 100) {
-        p.el.remove();
-        this.particles.splice(i, 1);
-      }
+    // Smoothly transition background color overlay to match mode
+    const color = this.themeColors[mode] || this.themeColors.HERO;
+    const overlay = document.getElementById('gif-bg-overlay');
+    if (overlay) {
+      overlay.style.backgroundColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
     }
   }
+
+  animate() {}
+
+  renderMatrixRain() {}
 }
